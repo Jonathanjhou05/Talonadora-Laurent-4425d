@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel HMI - Talonadora Laurent 4425d</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        industrial: {
+                            950: '#070b14',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                            600: '#475569',
+                            cyan: '#06b6d4',
+                            amber: '#f59e0b',
+                            emerald: '#10b981',
+                            rose: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome para ícones industriais -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Animações e Efeitos Industriais */
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.8)); }
+        }
+        .active-glow {
+            animation: pulseGlow 1s infinite;
+        }
+        @keyframes beltMove {
+            from { background-position: 0 0; }
+            to { background-position: 20px 0; }
+        }
+        .belt-animation {
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.15) 50%, transparent 50%);
+            background-size: 20px 100%;
+            animation: beltMove 0.6s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-industrial-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+
+    <!-- HEADER INDUSTRIAL LAURENT 4425d -->
+    <header class="bg-industrial-900 border-b border-industrial-800 px-6 py-4 flex flex-wrap items-center justify-between shadow-xl">
+        <div class="flex items-center space-x-3.5">
+            <div class="bg-gradient-to-br from-cyan-600 to-blue-800 p-3 rounded-xl shadow-lg shadow-cyan-500/20 text-white border border-cyan-500/30">
+                <i class="fa-solid fa-microchip text-xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2.5">
+                    <h1 class="font-bold text-lg tracking-wide uppercase text-slate-100">Talonadora Laurent 4425d</h1>
+                    <span class="text-xs bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 px-2.5 py-0.5 rounded-full font-mono font-bold tracking-wider">HMI v5.3 Produção</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">Sistema de Programação de Carnês (Contra-Capa, Miolo, Folder e Capa)</p>
+            </div>
+        </div>
+
+        <!-- BOTÕES DE AÇÃO RÁPIDA -->
+        <div class="flex items-center space-x-2.5 mt-3 sm:mt-0">
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>CLP CONECTADO</span>
+            </div>
+
+            <button onclick="loadPresetSequence()" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs px-4 py-2 rounded-lg font-semibold transition flex items-center space-x-2 shadow-lg shadow-amber-600/20">
+                <i class="fa-solid fa-book-open text-amber-200"></i>
+                <span>Carregar Receita de Carnê</span>
+            </button>
+
+            <button onclick="openExportModal()" class="bg-industrial-800 hover:bg-industrial-700 text-slate-200 border border-industrial-700 text-xs px-3.5 py-2 rounded-lg font-medium transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-code text-cyan-400"></i>
+                <span>Exportar</span>
+            </button>
+
+            <button onclick="openImportModal()" class="bg-industrial-800 hover:bg-industrial-700 text-slate-200 border border-industrial-700 text-xs px-3.5 py-2 rounded-lg font-medium transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-file-import text-amber-400"></i>
+                <span>Importar</span>
+            </button>
+
+            <button onclick="clearSequence()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-3 py-2 rounded-lg font-medium transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Limpar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- CORPO PRINCIPAL (3 COLUNAS) -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 p-5 max-w-[1920px] mx-auto w-full">
+
+        <!-- COLUNA 1: CATÁLOGO DE COMANDOS (23 ITENS) -->
+        <section class="lg:col-span-3 bg-industrial-900 border border-industrial-800 rounded-2xl flex flex-col h-[calc(100vh-7rem)] shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 bg-industrial-900/80 flex justify-between items-center">
+                <h2 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-cubes text-cyan-400"></i>
+                    <span>Catálogo de Comandos</span>
+                </h2>
+                <span class="text-xs bg-industrial-800 text-cyan-400 border border-industrial-700 px-2.5 py-0.5 rounded-full font-mono font-bold">23 Comandos</span>
+            </div>
+
+            <div class="p-3 border-b border-industrial-800 bg-industrial-950/40">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-search text-xs"></i>
+                    </span>
+                    <input type="text" id="searchCommand" oninput="filterCommands()" placeholder="Buscar comando por nome ou código..." class="w-full bg-industrial-950 border border-industrial-700 text-xs rounded-xl pl-9 pr-3 py-2.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+            </div>
+
+            <div id="catalogList" class="flex-1 overflow-y-auto p-3 space-y-4">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+        <!-- COLUNA 2: EDITOR DE SEQUÊNCIA (RECEITA ATUAL) -->
+        <section class="lg:col-span-5 bg-industrial-900 border border-industrial-800 rounded-2xl flex flex-col h-[calc(100vh-7rem)] shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 bg-industrial-900/80 flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <h2 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                        <i class="fa-solid fa-list-ol text-amber-400"></i>
+                        <span>Sequência de Programação</span>
+                    </h2>
+                    <span id="stepCountBadge" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-mono font-bold">0 Passos</span>
+                </div>
+                <button onclick="toggleSimulation()" id="simBtn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs px-4 py-2 rounded-xl font-semibold transition flex items-center space-x-2 shadow-lg shadow-cyan-600/25">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Executar Simulação</span>
+                </button>
+            </div>
+
+            <div id="sequenceList" class="flex-1 overflow-y-auto p-3 space-y-2">
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+                    <div class="w-16 h-16 rounded-2xl bg-industrial-800/80 flex items-center justify-center mb-3 text-slate-400 border border-industrial-700">
+                        <i class="fa-solid fa-arrow-pointer text-2xl text-cyan-400"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-200">Nenhum comando na sequência</p>
+                    <p class="text-xs text-slate-400 max-w-xs mt-1">Clique em "Carregar Receita de Carnê" ou adicione comandos pelo catálogo.</p>
+                </div>
+            </div>
+
+            <div class="p-3.5 border-t border-industrial-800 bg-industrial-950/60 flex justify-between items-center text-xs text-slate-400">
+                <span class="flex items-center space-x-1.5"><i class="fa-solid fa-circle-info text-cyan-400"></i> <span>Fluxo: Contra-Capa &rarr; Miolo 12f &rarr; Folder &rarr; Capa &rarr; B52 &rarr; Grampeador</span></span>
+                <span id="programStatusText" class="font-mono text-cyan-400 font-semibold">Status: Pronto</span>
+            </div>
+        </section>
+
+        <!-- COLUNA 3: ESQUEMA VISUAL ANIMADO DA MÁQUINA -->
+        <section class="lg:col-span-4 bg-industrial-900 border border-industrial-800 rounded-2xl flex flex-col h-[calc(100vh-7rem)] shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 bg-industrial-900/80 flex justify-between items-center">
+                <h2 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-eye text-emerald-400"></i>
+                    <span>Simulador Gráfico de Fluxo de Papel</span>
+                </h2>
+                <div class="flex items-center space-x-2 bg-industrial-950 px-3 py-1 rounded-full border border-industrial-800">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" id="hmiLed"></span>
+                    <span class="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold" id="hmiStateLabel">Standby</span>
+                </div>
+            </div>
+
+            <!-- SIMULADOR VISUAL AVANÇADO (CANVAS / SVG COM FLUXO DE FOLHAS) -->
+            <div class="p-4 border-b border-industrial-800 bg-industrial-950 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-2 px-1">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                        <i class="fa-solid fa-layer-group text-cyan-400"></i>
+                        <span>Validação Visual da Montagem do Carnê</span>
+                    </span>
+                    <span id="liveActionBadge" class="text-[10px] font-mono text-slate-400 bg-industrial-900 px-2 py-0.5 rounded border border-industrial-800">Aguardando Ciclo</span>
+                </div>
+
+                <!-- DIAGRAMA VISUAL COM SPRITES DE PAPEL EM TEMPO REAL -->
+                <div class="w-full bg-industrial-900 border border-industrial-800 rounded-xl p-3 relative overflow-hidden flex flex-col items-center shadow-inner">
+                    <svg viewBox="0 0 500 240" class="w-full h-auto max-h-[180px]">
+                        <!-- Grid de Fundo Industrial -->
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                        </pattern>
+                        <rect width="500" height="240" fill="url(#grid)" />
+
+                        <!-- Esteira Principal (Fundo) -->
+                        <rect id="svgBelt" x="70" y="90" width="280" height="60" rx="8" fill="#0f766e" stroke="#14b8a6" stroke-width="2" class="transition-all duration-300" />
+                        <text x="210" y="125" fill="#e2e8f0" font-size="11" font-weight="bold" text-anchor="middle" font-family="Inter">ESTEIRA TRANSPORTADORA</text>
+
+                        <!-- SPRITES DE PAPEL ANIMADOS (MOVIMENTO DINÂMICO) -->
+                        <!-- Contra Capa -->
+                        <g id="tokenContra" class="transition-all duration-500 opacity-0 transform">
+                            <rect x="140" y="60" width="80" height="38" rx="4" fill="#3b82f6" stroke="#93c5fd" stroke-width="2" />
+                            <text x="180" y="83" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">CONTRA CAPA</text>
+                        </g>
+
+                        <!-- Miolo (12 Folhas) -->
+                        <g id="tokenMiolo" class="transition-all duration-500 opacity-0 transform">
+                            <rect x="65" y="100" width="70" height="40" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+                            <text x="100" y="124" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle">MIOLO (12x)</text>
+                        </g>
+
+                        <!-- Folder -->
+                        <g id="tokenFolder" class="transition-all duration-500 opacity-0 transform">
+                            <rect x="140" y="60" width="80" height="38" rx="4" fill="#8b5cf6" stroke="#c4b5fd" stroke-width="2" />
+                            <text x="180" y="83" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">FOLDER</text>
+                        </g>
+
+                        <!-- Capa -->
+                        <g id="tokenCapa" class="transition-all duration-500 opacity-0 transform">
+                            <rect x="140" y="60" width="80" height="38" rx="4" fill="#f59e0b" stroke="#fde68a" stroke-width="2" />
+                            <text x="180" y="83" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">CAPA (FINAL)</text>
+                        </g>
+
+                        <!-- Carnê Completo Na Bandeja / Esteira -->
+                        <g id="tokenCarnet" class="transition-all duration-500 opacity-0 transform">
+                            <rect x="220" y="98" width="90" height="44" rx="5" fill="#ffffff" stroke="#10b981" stroke-width="2.5" />
+                            <text x="265" y="123" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">CARNÊ MONTAGEM</text>
+                        </g>
+
+                        <!-- Inseridor 2 (Esquerda) -->
+                        <g id="blockIns2" class="transition-all duration-300">
+                            <rect x="10" y="70" width="80" height="100" rx="12" fill="#1e293b" stroke="#475569" stroke-width="3" />
+                            <text x="50" y="125" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="middle">INSERIDOR 2</text>
+                        </g>
+
+                        <!-- Inseridor 1 (Acima) -->
+                        <g id="blockIns1" class="transition-all duration-300">
+                            <rect x="130" y="10" width="100" height="70" rx="10" fill="#1e293b" stroke="#475569" stroke-width="3" />
+                            <text x="180" y="50" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="middle">INSERIDOR 1</text>
+                        </g>
+
+                        <!-- Bandeja / Espera 02 (Vermelho) -->
+                        <rect id="blockEsper" x="120" y="85" width="45" height="70" rx="6" fill="none" stroke="#ef4444" stroke-width="3" class="transition-all duration-300" />
+                        <text x="142.5" y="125" fill="#fca5a5" font-size="9" font-weight="bold" text-anchor="middle">BANDEJA</text>
+
+                        <!-- Unidade Grampo & Arame Azul -->
+                        <g id="blockStitch" class="transition-all duration-300">
+                            <rect x="290" y="40" width="60" height="80" rx="8" fill="#334155" stroke="#64748b" stroke-width="2" />
+                            <circle cx="320" cy="30" r="14" fill="#0284c7" stroke="#38bdf8" stroke-width="2" id="wireSpool" />
+                            <text x="320" y="85" fill="#cbd5e1" font-size="9" font-weight="bold" text-anchor="middle">GRAMPO</text>
+                        </g>
+
+                        <!-- B52 & Esteira Grampo (Direita) -->
+                        <g id="blockB52" class="transition-all duration-300">
+                            <rect x="370" y="85" width="60" height="70" rx="8" fill="#78350f" stroke="#b45309" stroke-width="2" />
+                            <text x="400" y="125" fill="#fde68a" font-size="11" font-weight="bold" text-anchor="middle">B52</text>
+                        </g>
+
+                        <!-- Folha caindo na Bandeja B52 Final -->
+                        <g id="paperB52Sheet" class="transition-all duration-500 opacity-0">
+                            <rect x="380" y="95" width="40" height="30" rx="2" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" />
+                            <text x="400" y="113" fill="#1e293b" font-size="7" font-weight="bold" text-anchor="middle">SAÍDA</text>
+                        </g>
+
+                        <rect x="370" y="10" width="60" height="65" rx="8" fill="#451a03" stroke="#78350f" stroke-width="2" />
+                        <text x="400" y="48" fill="#fde68a" font-size="10" font-weight="bold" text-anchor="middle">ESTEIRA GRAMPO</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- TELEMETRIA EM TEMPO REAL -->
+            <div class="p-3 grid grid-cols-2 gap-2 border-b border-industrial-800 bg-industrial-950/60 text-xs font-mono">
+                <div class="bg-industrial-900 p-2.5 rounded-xl border border-industrial-800 flex justify-between items-center">
+                    <span class="text-slate-400">INSERIDOR 1:</span>
+                    <span id="statIns1" class="text-slate-400 font-bold">OFF</span>
+                </div>
+                <div class="bg-industrial-900 p-2.5 rounded-xl border border-industrial-800 flex justify-between items-center">
+                    <span class="text-slate-400">INSERIDOR 2 (MIOLO):</span>
+                    <span id="statIns2" class="text-slate-400 font-bold">OFF</span>
+                </div>
+                <div class="bg-industrial-900 p-2.5 rounded-xl border border-industrial-800 flex justify-between items-center">
+                    <span class="text-slate-400">BANDEJA B52:</span>
+                    <span id="statB52" class="text-slate-300 font-bold">UP (SUBIDA)</span>
+                </div>
+                <div class="bg-industrial-900 p-2.5 rounded-xl border border-industrial-800 flex justify-between items-center">
+                    <span class="text-slate-400">ESTEIRA:</span>
+                    <span id="statBelt" class="text-slate-300 font-bold">PARADA</span>
+                </div>
+            </div>
+
+            <!-- CONSOLE DE LOGS DO CLP -->
+            <div class="flex-1 flex flex-col bg-industrial-950 p-3 overflow-hidden">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                        <i class="fa-solid fa-terminal text-amber-400"></i>
+                        <span>Console de Execução do CLP</span>
+                    </span>
+                    <button onclick="clearLogs()" class="text-[10px] text-slate-500 hover:text-slate-300 transition">Limpar Logs</button>
+                </div>
+                <div id="consoleLogs" class="flex-1 bg-industrial-900/90 border border-industrial-800 rounded-xl p-2.5 overflow-y-auto space-y-1 font-mono text-xs">
+                    <div class="text-slate-500">[Sistema Laurent HMI v5.4 pronto com Simulador Gráfico de Papel...]</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL DE CONFIGURAÇÃO DE PARÂMETROS -->
+    <div id="paramModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-industrial-900 border border-industrial-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 flex justify-between items-center bg-industrial-900/90">
+                <h3 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i>
+                    <span id="modalCommandTitle">Configurar Comando</span>
+                </h3>
+                <button onclick="closeParamModal()" class="text-slate-400 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modalBody" class="p-5 space-y-4">
+                <!-- Preenchido via JS -->
+            </div>
+            <div class="p-4 border-t border-industrial-800 bg-industrial-950/60 flex justify-end space-x-3">
+                <button onclick="closeParamModal()" class="px-4 py-2 bg-industrial-800 hover:bg-industrial-700 text-slate-300 rounded-xl text-xs font-medium transition">Cancelar</button>
+                <button onclick="saveCommandParams()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-600/20 transition">Salvar Parâmetros</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EXPORTAÇÃO -->
+    <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-industrial-900 border border-industrial-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 flex justify-between items-center bg-industrial-900/90">
+                <h3 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-code text-cyan-400"></i>
+                    <span>Exportar Programa Laurent</span>
+                </h3>
+                <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex space-x-2 border-b border-industrial-800 pb-3">
+                    <button onclick="switchExportTab('script')" id="tabScriptBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 text-white transition">Script CLP</button>
+                    <button onclick="switchExportTab('json')" id="tabJsonBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-industrial-800 text-slate-300 transition">Formato JSON</button>
+                </div>
+                <div class="relative">
+                    <textarea id="exportOutputArea" readonly class="w-full h-64 bg-industrial-950 border border-industrial-700 rounded-xl p-3.5 font-mono text-xs text-cyan-300 focus:outline-none shadow-inner"></textarea>
+                </div>
+            </div>
+            <div class="p-4 border-t border-industrial-800 bg-industrial-950/60 flex justify-between items-center">
+                <span class="text-xs text-slate-400">Pronto para carregar no CLP Laurent 4425d</span>
+                <div class="space-x-2">
+                    <button onclick="copyExportText()" class="px-4 py-2 bg-industrial-800 hover:bg-industrial-700 text-slate-200 rounded-xl text-xs font-medium transition">
+                        <i class="fa-solid fa-copy mr-1.5"></i> Copiar
+                    </button>
+                    <button onclick="downloadFile()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition">
+                        <i class="fa-solid fa-download mr-1.5"></i> Baixar Arquivo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE IMPORTAÇÃO -->
+    <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-industrial-900 border border-industrial-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-industrial-800 flex justify-between items-center bg-industrial-900/90">
+                <h3 class="font-semibold text-sm flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-file-import text-amber-400"></i>
+                    <span>Importar Programa (JSON)</span>
+                </h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-slate-400">Cole o código JSON gerado anteriormente ou selecione um arquivo (.json).</p>
+                <textarea id="importInputArea" placeholder="Cole o JSON aqui..." class="w-full h-40 bg-industrial-950 border border-industrial-700 rounded-xl p-3.5 font-mono text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500 shadow-inner"></textarea>
+                <input type="file" id="importFileInput" accept=".json" onchange="handleFileImport(event)" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-industrial-800 file:text-slate-200 hover:file:bg-industrial-700 cursor-pointer">
+            </div>
+            <div class="p-4 border-t border-industrial-800 bg-industrial-950/60 flex justify-end space-x-3">
+                <button onclick="closeImportModal()" class="px-4 py-2 bg-industrial-800 hover:bg-industrial-700 text-slate-300 rounded-xl text-xs font-medium transition">Cancelar</button>
+                <button onclick="executeImport()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold transition">Carregar Sequência</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 bg-industrial-900 border border-industrial-700 shadow-2xl rounded-2xl p-4 flex items-center space-x-3.5 transform translate-y-24 opacity-0 transition-all duration-300 z-50 max-w-sm">
+        <div id="toastIcon" class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <h4 id="toastTitle" class="text-xs font-semibold text-slate-200">Sucesso</h4>
+            <p id="toastDesc" class="text-[11px] text-slate-400">Operação realizada com sucesso.</p>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA E ANIMAÇÕES -->
+    <script>
+        const commandsCatalog = [
+            { id: 1, code: "01", name: "Alimenta inseridor 1 capa e contra", category: "Inseridores & Elevadores", defaultParams: { quantidade: 1 } },
+            { id: 2, code: "02", name: "Envia inseridor 1 capa e contra", category: "Inseridores & Elevadores", defaultParams: { pulso: "Normal" } },
+            { id: 3, code: "03", name: "Sobe elevador 1", category: "Inseridores & Elevadores", defaultParams: { velocidade: "Média (50Hz)" } },
+            { id: 4, code: "04", name: "Desce elevador 1", category: "Inseridores & Elevadores", defaultParams: { curso_mm: 100 } },
+            { id: 5, code: "05", name: "Parar elevador 1", category: "Inseridores & Elevadores", defaultParams: { acao: "Imediato" } },
+            { id: 6, code: "06", name: "Alimenta inseridor 2", category: "Inseridores & Elevadores", defaultParams: { quantidade: 1 } },
+            { id: 7, code: "07", name: "Sobe elevador 2", category: "Inseridores & Elevadores", defaultParams: { velocidade: "Média (50Hz)" } },
+            { id: 8, code: "08", name: "Desce elevador 2", category: "Inseridores & Elevadores", defaultParams: { curso_mm: 100 } },
+            { id: 9, code: "09", name: "Parar elevador 2", category: "Inseridores & Elevadores", defaultParams: { acao: "Imediato" } },
+            { id: 10, code: "10", name: "Desce a bandeja b52", category: "Atuadores & Bandeja", defaultParams: { tempo_ms: 800 } },
+            { id: 11, code: "11", name: "Acionar esteira", category: "Atuadores & Bandeja", defaultParams: { velocidade_pct: 85 } },
+            { id: 12, code: "12", name: "Gerar atraso (ms)", category: "Temporizadores & Atrasos", defaultParams: { atraso_gerado: 24 } },
+            { id: 13, code: "13", name: "Gera atraso tbem em (10xms)", category: "Temporizadores & Atrasos", defaultParams: { atraso_gerado: 60 } },
+            { id: 14, code: "14", name: "Gera atraso em (10x s)", category: "Temporizadores & Atrasos", defaultParams: { atraso_gerado: 3 } },
+            { id: 15, code: "15", name: "Gera atraso tbem em (s)", category: "Temporizadores & Atrasos", defaultParams: { atraso_gerado: 2 } },
+            { id: 16, code: "16", name: "Sequência de leitor 1", category: "Leitura & Condicionais", defaultParams: { timeout_ms: 2000 } },
+            { id: 17, code: "17", name: "Sequência de leitor 2", category: "Leitura & Condicionais", defaultParams: { timeout_ms: 2000 } },
+            { id: 18, code: "18", name: "Abre loop", category: "Controle & Sistema", defaultParams: { iteracoes: 12, rotulo: "MIOLO_12F" } },
+            { id: 19, code: "19", name: "Fecha loop", category: "Controle & Sistema", defaultParams: { rotulo: "MIOLO_12F" } },
+            { id: 20, code: "20", name: "Fecha loop", category: "Controle & Sistema", defaultParams: { rotulo: "LOOP_B" } },
+            { id: 21, code: "21", name: "Alimenta condicional", category: "Leitura & Condicionais", defaultParams: { sensor: "Óptico B" } },
+            { id: 22, code: "22", name: "Grava programa", category: "Controle & Sistema", defaultParams: { nome_lote: "CARNE_OK" } },
+            { id: 23, code: "23", name: "deleta programa", category: "Controle & Sistema", defaultParams: { nome_lote: "LOTE_ANTIGO" } }
+        ];
+
+        let currentSequence = [];
+        let editingIndex = null;
+        let isSimulating = false;
+        let simulationInterval = null;
+        let currentStepIndex = 0;
+
+        window.onload = function() {
+            renderCatalog(commandsCatalog);
+            loadPresetSequence();
+            logMessage("Sistema HMI Talonadora Laurent v5.3 inicializado com sucesso.");
+        };
+
+        function loadPresetSequence() {
+            currentSequence = [
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 1, code: "01", name: "Alimenta inseridor 1 capa e contra", category: "Inseridores & Elevadores", params: { quantidade: 1 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 2, code: "02", name: "Envia inseridor 1 capa e contra (Contra Capa)", category: "Inseridores & Elevadores", params: { pulso: "Normal" } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 18, code: "18", name: "Abre loop", category: "Controle & Sistema", params: { iteracoes: 12, rotulo: "MIOLO_12F" } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 6, code: "06", name: "Alimenta inseridor 2", category: "Inseridores & Elevadores", params: { quantidade: 1 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 19, code: "19", name: "Fecha loop", category: "Controle & Sistema", params: { rotulo: "MIOLO_12F" } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 1, code: "01", name: "Alimenta inseridor 1 capa e contra", category: "Inseridores & Elevadores", params: { quantidade: 1 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 2, code: "02", name: "Envia inseridor 1 capa e contra (Folder)", category: "Inseridores & Elevadores", params: { pulso: "Normal" } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 1, code: "01", name: "Alimenta inseridor 1 capa e contra", category: "Inseridores & Elevadores", params: { quantidade: 1 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 2, code: "02", name: "Envia inseridor 1 capa e contra (Capa)", category: "Inseridores & Elevadores", params: { pulso: "Normal" } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 12, code: "12", name: "Gerar atraso (ms)", category: "Temporizadores & Atrasos", params: { atraso_gerado: 24 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 10, code: "10", name: "Desce a bandeja b52", category: "Atuadores & Bandeja", params: { tempo_ms: 800 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 11, code: "11", name: "Acionar esteira", category: "Atuadores & Bandeja", params: { velocidade_pct: 85 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 16, code: "16", name: "Sequência de leitor 1", category: "Leitura & Condicionais", params: { timeout_ms: 2000 } },
+                { uuid: 'step_' + Math.random().toString(36).substring(2, 9), id: 22, code: "22", name: "Grava programa", category: "Controle & Sistema", params: { nome_lote: "CARNE_LAURENT_OK" } }
+            ];
+            updateSequenceUI();
+            logMessage("Receita de montagem de carnê carregada com sucesso.");
+            showToast("Receita Carregada", "Contra-capa, Miolo 12f, Folder, Capa, B52 e Esteira prontos.", "success");
+        }
+
+        function renderCatalog(commands) {
+            const container = document.getElementById('catalogList');
+            container.innerHTML = '';
+            const categories = {};
+            commands.forEach(cmd => {
+                if (!categories[cmd.category]) categories[cmd.category] = [];
+                categories[cmd.category].push(cmd);
+            });
+
+            for (const [catName, cmds] of Object.entries(categories)) {
+                let catDiv = document.createElement('div');
+                catDiv.className = 'space-y-1.5';
+                
+                let header = document.createElement('div');
+                header.className = 'text-[11px] font-bold uppercase tracking-wider text-cyan-400 px-1 py-2 border-b border-industrial-800 flex items-center justify-between';
+                header.innerHTML = `<span>${catName}</span> <span class="text-[10px] text-slate-500 font-mono">${cmds.length}</span>`;
+                catDiv.appendChild(header);
+
+                let listDiv = document.createElement('div');
+                listDiv.className = 'space-y-1';
+
+                cmds.forEach(cmd => {
+                    let btn = document.createElement('div');
+                    btn.className = 'group flex items-center justify-between p-2.5 rounded-xl bg-industrial-950/60 hover:bg-industrial-800 border border-industrial-800/80 hover:border-cyan-500/40 transition cursor-pointer shadow-sm';
+                    btn.onclick = () => addCommandToSequence(cmd.id);
+                    
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <span class="font-mono text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20">${cmd.code}</span>
+                            <span class="text-xs text-slate-200 truncate font-medium">${cmd.name}</span>
+                        </div>
+                        <span class="text-slate-500 group-hover:text-cyan-400 text-xs px-1.5 transition"><i class="fa-solid fa-plus"></i></span>
+                    `;
+                    listDiv.appendChild(btn);
+                });
+
+                catDiv.appendChild(listDiv);
+                container.appendChild(catDiv);
+            }
+        }
+
+        function filterCommands() {
+            const query = document.getElementById('searchCommand').value.toLowerCase();
+            const filtered = commandsCatalog.filter(c => c.name.toLowerCase().includes(query) || c.code.includes(query));
+            renderCatalog(filtered);
+        }
+
+        function addCommandToSequence(cmdId) {
+            const cmd = commandsCatalog.find(c => c.id === cmdId);
+            if (!cmd) return;
+
+            const newStep = {
+                uuid: 'step_' + Math.random().toString(36).substring(2, 9),
+                id: cmd.id,
+                code: cmd.code,
+                name: cmd.name,
+                category: cmd.category,
+                params: JSON.parse(JSON.stringify(cmd.defaultParams))
+            };
+
+            currentSequence.push(newStep);
+            updateSequenceUI();
+            logMessage(`Comando [${cmd.code}] ${cmd.name} adicionado.`);
+        }
+
+        function updateSequenceUI() {
+            const container = document.getElementById('sequenceList');
+            const badge = document.getElementById('stepCountBadge');
+            badge.textContent = `${currentSequence.length} Passos`;
+
+            if (currentSequence.length === 0) {
+                container.innerHTML = `
+                    <div id="emptyState" class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+                        <div class="w-16 h-16 rounded-2xl bg-industrial-800/80 flex items-center justify-center mb-3 text-slate-400 border border-industrial-700">
+                            <i class="fa-solid fa-arrow-pointer text-2xl text-cyan-400"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-200">Nenhum comando na sequência</p>
+                        <p class="text-xs text-slate-400 max-w-xs mt-1">Clique em "Carregar Receita de Carnê" ou adicione comandos pelo catálogo à esquerda.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            currentSequence.forEach((step, index) => {
+                let div = document.createElement('div');
+                div.className = `flex items-center justify-between p-3 rounded-xl border transition ${isSimulating && currentStepIndex === index ? 'bg-cyan-950/50 border-cyan-500 shadow-lg' : 'bg-industrial-950/70 border-industrial-800 hover:border-slate-700 shadow-sm'}`;
+                
+                let paramSummary = Object.entries(step.params).map(([k, v]) => {
+                    let label = k === 'atraso_gerado' ? 'atraso gerado' : k;
+                    return `<span class="bg-industrial-900 px-2 py-0.5 rounded-lg text-[10px] text-slate-300 border border-industrial-800 font-mono">${label}: <strong class="text-cyan-300">${v}</strong></span>`;
+                }).join(' ');
+
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden flex-1">
+                        <span class="font-mono text-xs font-bold text-slate-500 w-6">${index + 1}.</span>
+                        <span class="font-mono text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-lg border border-cyan-500/25">${step.code}</span>
+                        <div class="flex flex-col overflow-hidden flex-1">
+                            <span class="text-xs font-semibold text-slate-200 truncate">${step.name}</span>
+                            <div class="flex flex-wrap gap-1.5 mt-1">${paramSummary}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1 ml-2">
+                        <button onclick="openParamModal('${step.uuid}')" class="p-2 rounded-lg hover:bg-industrial-800 text-slate-400 hover:text-cyan-400 transition" title="Configurar Parâmetros">
+                            <i class="fa-solid fa-sliders text-xs"></i>
+                        </button>
+                        <button onclick="moveStep('${step.uuid}', -1)" class="p-2 rounded-lg hover:bg-industrial-800 text-slate-400 hover:text-slate-200 transition" title="Subir">
+                            <i class="fa-solid fa-chevron-up text-xs"></i>
+                        </button>
+                        <button onclick="moveStep('${step.uuid}', 1)" class="p-2 rounded-lg hover:bg-industrial-800 text-slate-400 hover:text-slate-200 transition" title="Descer">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <button onclick="removeStep('${step.uuid}')" class="p-2 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition" title="Remover">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeStep(uuid) {
+            currentSequence = currentSequence.filter(s => s.uuid !== uuid);
+            updateSequenceUI();
+        }
+
+        function moveStep(uuid, direction) {
+            const index = currentSequence.findIndex(s => s.uuid === uuid);
+            if (index < 0) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= currentSequence.length) return;
+            const temp = currentSequence[index];
+            currentSequence[index] = currentSequence[newIndex];
+            currentSequence[newIndex] = temp;
+            updateSequenceUI();
+        }
+
+        function clearSequence() {
+            currentSequence = [];
+            updateSequenceUI();
+            logMessage("Sequência limpa.");
+        }
+
+        function openParamModal(uuid) {
+            const step = currentSequence.find(s => s.uuid === uuid);
+            if (!step) return;
+            editingIndex = uuid;
+            document.getElementById('modalCommandTitle').textContent = `Configurar [${step.code}] ${step.name}`;
+            
+            const body = document.getElementById('modalBody');
+            body.innerHTML = '';
+
+            for (const [key, val] of Object.entries(step.params)) {
+                let div = document.createElement('div');
+                div.className = 'space-y-1.5';
+                div.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">${key}</label>
+                    <input type="text" id="param_${key}" value="${val}" class="w-full bg-industrial-950 border border-industrial-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500">
+                `;
+                body.appendChild(div);
+            }
+
+            document.getElementById('paramModal').classList.remove('hidden');
+        }
+
+        function closeParamModal() {
+            document.getElementById('paramModal').classList.add('hidden');
+            editingIndex = null;
+        }
+
+        function saveCommandParams() {
+            if (!editingIndex) return;
+            const step = currentSequence.find(s => s.uuid === editingIndex);
+            if (!step) return;
+
+            for (const key of Object.keys(step.params)) {
+                const input = document.getElementById(`param_${key}`);
+                if (input) {
+                    let val = input.value;
+                    if (!isNaN(val) && val.trim() !== '') val = Number(val);
+                    step.params[key] = val;
+                }
+            }
+
+            closeParamModal();
+            updateSequenceUI();
+            showToast("Salvo", "Parâmetros atualizados.", "success");
+        }
+
+        function toggleSimulation() {
+            if (isSimulating) {
+                stopSimulation();
+            } else {
+                startSimulation();
+            }
+        }
+
+        function startSimulation() {
+            if (currentSequence.length === 0) {
+                showToast("Aviso", "Adicione comandos antes de simular.", "warning");
+                return;
+            }
+            isSimulating = true;
+            currentStepIndex = 0;
+            document.getElementById('simBtn').innerHTML = `<i class="fa-solid fa-stop"></i> <span>Parar Simulação</span>`;
+            document.getElementById('simBtn').className = "bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs px-4 py-2 rounded-xl font-semibold transition flex items-center space-x-2 shadow-lg shadow-rose-600/30";
+            document.getElementById('hmiLed').className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping";
+            document.getElementById('hmiStateLabel').textContent = "Executando";
+            document.getElementById('programStatusText').textContent = "Status: Executando Ciclo de Carnê";
+            
+            logMessage("=== INÍCIO DA MONTAGEM DE CARNÊ (LAURENT 4425D) ===");
+            runSimulationStep();
+        }
+
+        function runSimulationStep() {
+            if (!isSimulating) return;
+            if (currentStepIndex >= currentSequence.length) {
+                logMessage("=== CARNÊ CONCLUÍDO E GRAVADO COM SUCESSO ===");
+                showToast("Ciclo Finalizado", "Carnê montado, grampeado e gravado!", "success");
+                stopSimulation();
+                return;
+            }
+
+            const step = currentSequence[currentStepIndex];
+            updateSequenceUI();
+            updateVisualTelemetry(step);
+            logMessage(`Passo ${currentStepIndex + 1}: [${step.code}] ${step.name}`);
+
+            let delay = 900;
+            if (step.id === 12) delay = (step.params.atraso_gerado || 500);
+            if (step.id === 13) delay = (step.params.atraso_gerado || 50) * 10;
+            if (step.id === 10) delay = 1200;
+            if (step.id === 11) delay = 1500;
+
+            simulationInterval = setTimeout(() => {
+                currentStepIndex++;
+                runSimulationStep();
+            }, Math.min(delay, 2500));
+        }
+
+        function stopSimulation() {
+            isSimulating = false;
+            if (simulationInterval) clearTimeout(simulationInterval);
+            document.getElementById('simBtn').innerHTML = `<i class="fa-solid fa-play"></i> <span>Executar Simulação</span>`;
+            document.getElementById('simBtn').className = "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs px-4 py-2 rounded-xl font-semibold transition flex items-center space-x-2 shadow-lg shadow-cyan-600/25";
+            document.getElementById('hmiLed').className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            document.getElementById('hmiStateLabel').textContent = "Standby";
+            document.getElementById('programStatusText').textContent = "Status: Pronto";
+            updateSequenceUI();
+            resetVisualTelemetry();
+            logMessage("Simulação interrompida/finalizada.");
+        }
+
+        function updateVisualTelemetry(step) {
+            const ins1 = document.getElementById('statIns1');
+            const ins2 = document.getElementById('statIns2');
+            const b52 = document.getElementById('statB52');
+            const belt = document.getElementById('statBelt');
+            
+            const blockIns1 = document.getElementById('blockIns1');
+            const blockIns2 = document.getElementById('blockIns2');
+            const blockB52 = document.getElementById('blockB52');
+            const blockEsper = document.getElementById('blockEsper');
+            const blockStitch = document.getElementById('blockStitch');
+            const svgBelt = document.getElementById('svgBelt');
+            
+            const tokenContra = document.getElementById('tokenContra');
+            const tokenMiolo = document.getElementById('tokenMiolo');
+            const tokenFolder = document.getElementById('tokenFolder');
+            const tokenCapa = document.getElementById('tokenCapa');
+            const tokenCarnet = document.getElementById('tokenCarnet');
+            const paperB52Sheet = document.getElementById('paperB52Sheet');
+            const liveBadge = document.getElementById('liveActionBadge');
+
+            resetVisualTelemetry();
+
+            liveBadge.textContent = `Ativo: [${step.code}] ${step.name}`;
+            liveBadge.className = "text-[10px] font-mono text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/40 animate-pulse";
+
+            // Lógica de animação detalhada para cada tipo de folha/comando
+            if (step.id === 1 || step.id === 2) {
+                ins1.textContent = "ATIVO (INSERIDOR 1)";
+                ins1.className = "text-emerald-400 font-bold";
+                blockIns1.classList.add('active-glow');
+
+                if (step.name.includes("Contra")) {
+                    if (tokenContra) {
+                        tokenContra.style.opacity = "1";
+                        tokenContra.style.transform = "translate(20px, 35px)";
+                    }
+                } else if (step.name.includes("Folder")) {
+                    if (tokenFolder) {
+                        tokenFolder.style.opacity = "1";
+                        tokenFolder.style.transform = "translate(40px, 35px)";
+                    }
+                } else if (step.name.includes("Capa")) {
+                    if (tokenCapa) {
+                        tokenCapa.style.opacity = "1";
+                        tokenCapa.style.transform = "translate(60px, 35px)";
+                    }
+                } else {
+                    if (tokenContra) {
+                        tokenContra.style.opacity = "1";
+                        tokenContra.style.transform = "translate(20px, 35px)";
+                    }
+                }
+            } else if (step.id === 6 || step.id === 18) {
+                ins2.textContent = "ALIMENTANDO MIOLO (12x)";
+                ins2.className = "text-emerald-400 font-bold";
+                blockIns2.classList.add('active-glow');
+                if (tokenMiolo) {
+                    tokenMiolo.style.opacity = "1";
+                    tokenMiolo.style.transform = "translateX(65px)";
+                }
+            } else if (step.id === 10) {
+                b52.textContent = "DESCENDO (B52)";
+                b52.className = "text-amber-400 font-bold";
+                blockB52.classList.add('active-glow');
+                blockEsper.setAttribute('stroke', '#10b981');
+                if (tokenCarnet) {
+                    tokenCarnet.style.opacity = "1";
+                    tokenCarnet.style.transform = "translateX(50px)";
+                }
+            } else if (step.id === 11) {
+                belt.textContent = "RODANDO (GRAMPEADOR)";
+                belt.className = "text-emerald-400 font-bold";
+                svgBelt.classList.add('belt-animation');
+                svgBelt.setAttribute('stroke', '#10b981');
+                blockStitch.classList.add('active-glow');
+                if (tokenCarnet) {
+                    tokenCarnet.style.opacity = "1";
+                    tokenCarnet.style.transform = "translateX(120px)";
+                }
+            } else if (step.id === 16) {
+                blockStitch.classList.add('active-glow');
+                if (paperB52Sheet) {
+                    paperB52Sheet.style.opacity = "1";
+                    paperB52Sheet.style.transform = "translateY(10px)";
+                }
+            } else if (step.id === 22) {
+                blockB52.classList.add('active-glow');
+                if (paperB52Sheet) {
+                    paperB52Sheet.style.opacity = "1";
+                    paperB52Sheet.style.transform = "translateY(25px)";
+                }
+            }
+        }
+
+        function resetVisualTelemetry() {
+            document.getElementById('statIns1').textContent = "OFF";
+            document.getElementById('statIns1').className = "text-slate-400 font-bold";
+            document.getElementById('statIns2').textContent = "OFF";
+            document.getElementById('statIns2').className = "text-slate-400 font-bold";
+            document.getElementById('statB52').textContent = "UP (SUBIDA)";
+            document.getElementById('statB52').className = "text-slate-300 font-bold";
+            document.getElementById('statBelt').textContent = "PARADA";
+            document.getElementById('statBelt').className = "text-slate-300 font-bold";
+
+            const b1 = document.getElementById('blockIns1');
+            const b2 = document.getElementById('blockIns2');
+            const b5 = document.getElementById('blockB52');
+            const bEsper = document.getElementById('blockEsper');
+            const bStitch = document.getElementById('blockStitch');
+            const svgBelt = document.getElementById('svgBelt');
+            
+            const tokenContra = document.getElementById('tokenContra');
+            const tokenMiolo = document.getElementById('tokenMiolo');
+            const tokenFolder = document.getElementById('tokenFolder');
+            const tokenCapa = document.getElementById('tokenCapa');
+            const tokenCarnet = document.getElementById('tokenCarnet');
+            const paperB52Sheet = document.getElementById('paperB52Sheet');
+
+            if (b1) b1.classList.remove('active-glow');
+            if (b2) b2.classList.remove('active-glow');
+            if (b5) b5.classList.remove('active-glow');
+            if (bStitch) bStitch.classList.remove('active-glow');
+            if (bEsper) bEsper.setAttribute('stroke', '#ef4444');
+            if (svgBelt) {
+                svgBelt.classList.remove('belt-animation');
+                svgBelt.setAttribute('stroke', '#14b8a6');
+            }
+
+            [tokenContra, tokenMiolo, tokenFolder, tokenCapa, tokenCarnet, paperB52Sheet].forEach(token => {
+                if (token) {
+                    token.style.opacity = "0";
+                    token.style.transform = "translate(0px, 0px)";
+                }
+            });
+            
+            const liveBadge = document.getElementById('liveActionBadge');
+            if (liveBadge) {
+                liveBadge.textContent = "Aguardando Ciclo";
+                liveBadge.className = "text-[10px] font-mono text-slate-400 bg-industrial-900 px-2 py-0.5 rounded border border-industrial-800";
+            }
+        }
+
+        function openExportModal() {
+            if (currentSequence.length === 0) {
+                showToast("Aviso", "Adicione comandos antes de exportar.", "warning");
+                return;
+            }
+            switchExportTab('script');
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        function switchExportTab(type) {
+            const btnScript = document.getElementById('tabScriptBtn');
+            const btnJson = document.getElementById('tabJsonBtn');
+            const area = document.getElementById('exportOutputArea');
+
+            if (type === 'script') {
+                btnScript.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 text-white transition";
+                btnJson.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-industrial-800 text-slate-300 transition";
+                area.value = generateScript();
+            } else {
+                btnJson.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 text-white transition";
+                btnScript.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-industrial-800 text-slate-300 transition";
+                area.value = generateJson();
+            }
+        }
+
+        function generateScript() {
+            let script = "// SCRIPT CLP - MONTAGEM DE CARNÊ (LAURENT 4425d)\n";
+            script += `// TOTAL DE PASSOS: ${currentSequence.length}\n\n`;
+            currentSequence.forEach((step) => {
+                let paramsStr = Object.entries(step.params).map(([k,v]) => `${k}=${v}`).join(', ');
+                script += `${step.code} ${step.name} (${paramsStr})\n`;
+            });
+            return script;
+        }
+
+        function generateJson() {
+            return JSON.stringify({
+                versao: "5.3-HMI",
+                equipamento: "Talonadora Laurent 4425d",
+                receita: "Montagem de Carnê",
+                passos: currentSequence
+            }, null, 2);
+        }
+
+        function copyExportText() {
+            const area = document.getElementById('exportOutputArea');
+            area.select();
+            document.execCommand('copy');
+            showToast("Copiado!", "Texto copiado para a área de transferência.", "success");
+        }
+
+        function downloadFile() {
+            const text = document.getElementById('exportOutputArea').value;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "receita_carne_laurent.txt";
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Download", "Arquivo salvo.", "success");
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('importInputArea').value = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+
+        function executeImport() {
+            const val = document.getElementById('importInputArea').value.trim();
+            if (!val) return;
+            try {
+                const data = JSON.parse(val);
+                if (data.passos && Array.isArray(data.passos)) {
+                    currentSequence = data.passos;
+                    updateSequenceUI();
+                    closeImportModal();
+                    showToast("Sucesso", "Programa importado.", "success");
+                }
+            } catch (err) {
+                showToast("Erro", "JSON inválido.", "danger");
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('consoleLogs').innerHTML = '<div class="text-slate-500">[Log limpo]</div>';
+        }
+
+        function logMessage(msg) {
+            const consoleLogs = document.getElementById('consoleLogs');
+            const time = new Date().toTimeString().split(' ')[0];
+            const div = document.createElement('div');
+            div.className = 'text-slate-300 font-mono text-xs';
+            div.innerHTML = `<span class="text-slate-500">[${time}]</span> ${msg}`;
+            consoleLogs.appendChild(div);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        function showToast(title, desc) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastDesc').textContent = desc;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
+        }
+    </script>
+</body>
+</html>
