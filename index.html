@@ -43,7 +43,7 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         button {
-            padding: 8px 16px;
+            padding: 8px 14px;
             font-size: 0.75rem;
             font-weight: 600;
             border-radius: 8px;
@@ -51,7 +51,7 @@
             border: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.2s;
         }
         .btn-blue { background-color: #2563eb; color: #fff; }
@@ -64,6 +64,8 @@
         .btn-amber:hover { background-color: #b45309; }
         .btn-red { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
         .btn-red:hover { background-color: #991b1b; color: #fff; }
+        .btn-purple { background-color: #7c3aed; color: #fff; }
+        .btn-purple:hover { background-color: #6d28d9; }
 
         main {
             flex: 1;
@@ -103,7 +105,7 @@
         .scrollable {
             flex: 1;
             overflow-y: auto;
-            max-height: calc(100vh - 340px);
+            max-height: calc(100vh - 380px);
             padding-right: 4px;
         }
         .scrollable::-webkit-scrollbar { width: 6px; }
@@ -149,12 +151,23 @@
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
         }
 
+        .recipe-toolbar {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .viewport-box {
             background-color: #020617;
             border-radius: 10px;
             padding: 14px;
             position: relative;
-            height: 320px;
+            height: 300px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -209,7 +222,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .metric-card {
             background: #020617;
@@ -234,7 +247,7 @@
             font-family: monospace;
             font-size: 0.68rem;
             color: #34d399;
-            height: 90px;
+            height: 80px;
             overflow-y: auto;
         }
     </style>
@@ -248,7 +261,7 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Supervisório HMI com Métricas e 23 Comandos CLP</p>
+                <p>Supervisório HMI - Gestão Completa de Receitas (Salvar, Importar/Exportar)</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -267,15 +280,32 @@
             <div class="scrollable" id="commandCatalog"></div>
         </section>
 
-        <!-- COLUNA 2: SEQUÊNCIA E PARAMETRIZAÇÃO -->
+        <!-- COLUNA 2: SEQUÊNCIA E GERENCIAMENTO DE RECEITAS -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 2. Sequência Ativa</span>
+                <span><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 2. Sequência & Receitas</span>
                 <div style="display: flex; gap: 6px;">
-                    <button onclick="clearSequence()" class="btn-red" style="padding: 3px 6px; font-size: 0.65rem;"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="clearSequence()" class="btn-red" style="padding: 3px 6px; font-size: 0.65rem;" title="Limpar Sequência"><i class="fa-solid fa-trash"></i></button>
                     <span id="stepCount" style="font-family: monospace; font-size: 0.7rem; background: #1e293b; padding: 3px 6px; border-radius: 4px; color: #cbd5e1;">0 passos</span>
                 </div>
             </div>
+
+            <!-- Toolbar de Gestão de Receitas (Salvar, Carregar, Exportar, Importar) -->
+            <div class="recipe-toolbar">
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="text" id="recipeNameInput" placeholder="Nome da receita (ex: Carnê 12fls)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 10px; font-size: 0.75rem;">
+                    <button onclick="saveCurrentRecipe()" class="btn-purple" title="Salvar Receita"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between;">
+                    <select id="savedRecipesSelect" onchange="loadSelectedRecipe(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 8px; font-size: 0.75rem;">
+                        <option value="">-- Receitas Salvas no Navegador --</option>
+                    </select>
+                    <button onclick="exportRecipeJSON()" class="btn-slate" title="Exportar JSON"><i class="fa-solid fa-download"></i></button>
+                    <button onclick="document.getElementById('importFile').click()" class="btn-slate" title="Importar JSON"><i class="fa-solid fa-upload"></i></button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRecipeJSON(event)">
+                </div>
+            </div>
+
             <div class="scrollable" id="sequenceList"></div>
             
             <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
@@ -294,11 +324,11 @@
         <!-- COLUNA 3: SINÓPTICO E MÉTRICAS DE PRODUÇÃO -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-chart-line text-cyan-400 mr-2"></i> 3 & 4. Supervisório & Métricas</span>
+                <span><i class="fa-solid fa-chart-line text-cyan-400 mr-2"></i> 3. Supervisório & Métricas</span>
                 <span id="alarmIndicator" style="font-size: 0.65rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">Sistema OK</span>
             </div>
 
-            <!-- Métricas de Produção (OEE / Turno) -->
+            <!-- Métricas de Produção (Incremento de 3 em 3 por ciclo) -->
             <div class="metrics-grid">
                 <div class="metric-card">
                     <span style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Carnês Produzidos</span>
@@ -354,7 +384,7 @@
                     <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Supervisório HMI & 23 Comandos prontos.</div>
+                    <div>[00:00:00] Supervisório HMI pronto com gestão de receitas.</div>
                 </div>
             </div>
         </section>
@@ -500,7 +530,97 @@
                 { id: 22, name: "Grava programa", hasParam: false }
             ];
             renderSequence();
-            addLog("Receita Padrão carregada com sucesso.");
+            document.getElementById('recipeNameInput').value = "Receita Padrão";
+            addLog("Receita Padrão carregada.");
+        }
+
+        // --- GESTÃO DE RECEITAS (Salvar, LocalStorage, Importar, Exportar) ---
+        function saveCurrentRecipe() {
+            const nameInput = document.getElementById('recipeNameInput').value.trim();
+            if (!nameInput) {
+                alert("Digite um nome para a receita antes de salvar.");
+                return;
+            }
+            if (activeSequence.length === 0) {
+                alert("A sequência está vazia. Adicione comandos antes de salvar.");
+                return;
+            }
+
+            let savedRecipes = JSON.parse(localStorage.getItem('laurent_recipes') || '{}');
+            savedRecipes[nameInput] = activeSequence;
+            localStorage.setItem('laurent_recipes', JSON.stringify(savedRecipes));
+
+            updateSavedRecipesSelect();
+            addLog(`Receita "${nameInput}" salva com sucesso no navegador!`);
+            alert(`Receita "${nameInput}" salva com sucesso!`);
+        }
+
+        function updateSavedRecipesSelect(selectedName = "") {
+            const select = document.getElementById('savedRecipesSelect');
+            if (!select) return;
+            let savedRecipes = JSON.parse(localStorage.getItem('laurent_recipes') || '{}');
+            
+            select.innerHTML = '<option value="">-- Receitas Salvas no Navegador --</option>';
+            Object.keys(savedRecipes).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.innerText = name;
+                if (name === selectedName) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadSelectedRecipe(recipeName) {
+            if (!recipeName) return;
+            let savedRecipes = JSON.parse(localStorage.getItem('laurent_recipes') || '{}');
+            if (savedRecipes[recipeName]) {
+                activeSequence = JSON.parse(JSON.stringify(savedRecipes[recipeName]));
+                document.getElementById('recipeNameInput').value = recipeName;
+                renderSequence();
+                addLog(`Receita "${recipeName}" carregada.`);
+            }
+        }
+
+        function exportRecipeJSON() {
+            if (activeSequence.length === 0) {
+                alert("Nenhuma sequência ativa para exportar.");
+                return;
+            }
+            const recipeName = document.getElementById('recipeNameInput').value.trim() || "receita_laurent";
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ name: recipeName, sequence: activeSequence }, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `${recipeName.toLowerCase().replace(/\s+/g, '_')}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            addLog(`Receita "${recipeName}" exportada como JSON.`);
+        }
+
+        function importRecipeJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.sequence && Array.isArray(imported.sequence)) {
+                        activeSequence = imported.sequence;
+                        if (imported.name) {
+                            document.getElementById('recipeNameInput').value = imported.name;
+                        }
+                        renderSequence();
+                        addLog(`Receita "${imported.name || 'Importada'}" importada com sucesso!`);
+                        alert(`Receita importada com sucesso! (${activeSequence.length} passos)`);
+                    } else {
+                        alert("Arquivo JSON inválido para a Talonadora Laurent.");
+                    }
+                } catch (err) {
+                    alert("Erro ao ler o arquivo JSON.");
+                }
+                event.target.value = ""; // Limpa input
+            };
+            reader.readAsText(file);
         }
 
         function addLog(msg) {
@@ -529,7 +649,7 @@
 
         function runSimulation() {
             if (activeSequence.length === 0) {
-                alert("Carregue a Receita Padrão antes de iniciar.");
+                alert("Carregue ou monte uma receita antes de iniciar.");
                 return;
             }
             isRunning = true;
@@ -549,12 +669,12 @@
             if (!isRunning) return;
             if (currentStepIndex >= activeSequence.length) {
                 stopSimulation();
-                totalProduced++;
+                totalProduced += 3; // Incrementa de 3 em 3 carnês por ciclo
                 document.getElementById('prodCount').innerText = totalProduced;
-                addLog("Ciclo finalizado! Carnê grampeado com sucesso.");
+                addLog("Ciclo finalizado! +3 carnês produzidos e contabilizados.");
                 document.getElementById('cycleStatus').innerText = "Concluído";
                 document.getElementById('cycleStatus').style.color = "#34d399";
-                document.getElementById('currentActionDesc').innerText = "Carnê pronto na saída";
+                document.getElementById('currentActionDesc').innerText = "3 carnês prontos na saída";
                 return;
             }
 
@@ -606,6 +726,7 @@
 
         window.onload = () => {
             renderCatalog();
+            updateSavedRecipesSelect();
             loadDefaultRecipe();
         };
     </script>
