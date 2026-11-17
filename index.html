@@ -162,12 +162,36 @@
             gap: 8px;
         }
 
+        .calc-box {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        .calc-metric {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px 4px;
+        }
+
         .viewport-box {
             background-color: #020617;
             border-radius: 10px;
             padding: 14px;
             position: relative;
-            height: 300px;
+            height: 250px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -179,7 +203,7 @@
             background: #1e293b;
             border: 2px solid #334155;
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -194,23 +218,22 @@
         .flow-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+            gap: 6px;
             flex: 1;
-            margin: 8px 0;
+            margin: 6px 0;
             align-items: center;
         }
         .flow-card {
             background: #090d16;
             border: 1px solid #1e293b;
             border-radius: 8px;
-            padding: 8px 4px;
+            padding: 6px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             height: 100%;
-            transition: all 0.3s;
         }
         .flow-card.highlight {
             border-color: #38bdf8;
@@ -222,18 +245,18 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .metric-card {
             background: #020617;
             border: 1px solid #1e293b;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px 10px;
             display: flex;
             flex-direction: column;
         }
         .metric-value {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: bold;
             font-family: monospace;
             color: #38bdf8;
@@ -247,7 +270,7 @@
             font-family: monospace;
             font-size: 0.68rem;
             color: #34d399;
-            height: 80px;
+            height: 70px;
             overflow-y: auto;
         }
     </style>
@@ -261,7 +284,7 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Supervisório HMI - Gestão Completa de Receitas (Salvar, Importar/Exportar)</p>
+                <p>Supervisório HMI com Calculadora de Corte A4 por Faca (3 Carnês/Ciclo)</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -290,7 +313,6 @@
                 </div>
             </div>
 
-            <!-- Toolbar de Gestão de Receitas (Salvar, Carregar, Exportar, Importar) -->
             <div class="recipe-toolbar">
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="text" id="recipeNameInput" placeholder="Nome da receita (ex: Carnê 12fls)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 10px; font-size: 0.75rem;">
@@ -321,14 +343,42 @@
             </div>
         </section>
 
-        <!-- COLUNA 3: SINÓPTICO E MÉTRICAS DE PRODUÇÃO -->
+        <!-- COLUNA 3: CALCULADORA DE INSUMOS COM FACA DE CORTE A4, MÉTRICAS E SINÓPTICO -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-chart-line text-cyan-400 mr-2"></i> 3. Supervisório & Métricas</span>
-                <span id="alarmIndicator" style="font-size: 0.65rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">Sistema OK</span>
+                <span><i class="fa-solid fa-calculator text-cyan-400 mr-2"></i> 3. Calculadora de Insumos</span>
+                <span style="font-size: 0.65rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">Faca Corte A4</span>
             </div>
 
-            <!-- Métricas de Produção (Incremento de 3 em 3 por ciclo) -->
+            <!-- CALCULADORA DE INSUMOS (CORRETA: 1 Ciclo = 12 Miolo + 2 Capa = 14 Folhas A4 para 3 Carnês) -->
+            <div class="calc-box">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.7rem; font-weight: bold; color: #cbd5e1;"><i class="fa-solid fa-scissors mr-1 text-amber-400"></i> Orçamento de Impressão</span>
+                    <span style="font-size: 0.65rem; color: #64748b;">(1 Ciclo = 14 Folhas = 3 Carnês)</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.65rem; color: #94a3b8; display: block; margin-bottom: 2px;">Carnês Desejados:</label>
+                        <input type="number" id="inputCarneQtd" value="300" min="3" step="3" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 8px; font-family: monospace; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <div class="calc-grid">
+                    <div class="calc-metric">
+                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Ciclos (Máquina)</span>
+                        <span id="calcCiclos" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #38bdf8;">100</span>
+                    </div>
+                    <div class="calc-metric">
+                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Folhas Miolo A4</span>
+                        <span id="calcMiolo" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #34d399;">1200</span>
+                    </div>
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 4px; text-align: center;">
+                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Folhas Capa A4</span>
+                        <span id="calcCapa" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #fde68a;">200</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas de Produção -->
             <div class="metrics-grid">
                 <div class="metric-card">
                     <span style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Carnês Produzidos</span>
@@ -343,48 +393,48 @@
             <div class="viewport-box">
                 <div id="boxMgl" class="station-box">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="background: #2563eb; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">MGL</span>
-                        <span style="font-size: 0.7rem; font-family: monospace; font-weight: bold; color: #f1f5f9;">Painel Digital 950 CL</span>
+                        <span style="background: #2563eb; color: #fff; font-size: 8px; font-weight: bold; padding: 2px 5px; border-radius: 4px;">MGL</span>
+                        <span style="font-size: 0.68rem; font-family: monospace; font-weight: bold; color: #f1f5f9;">Painel 950 CL</span>
                     </div>
-                    <span id="mglStatusText" style="font-size: 9px; font-family: monospace; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Standby</span>
+                    <span id="mglStatusText" style="font-size: 8px; font-family: monospace; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Standby</span>
                 </div>
 
                 <div class="flow-container">
                     <div id="flowIns1" class="flow-card">
-                        <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1" style="font-size: 0.8rem;"></i>
-                        <span style="font-size: 8px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
-                        <span style="font-size: 7px; color: #94a3b8;">Capa / Contra</span>
+                        <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1" style="font-size: 0.75rem;"></i>
+                        <span style="font-size: 7px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
+                        <span style="font-size: 6px; color: #94a3b8;">Capa / Contra</span>
                     </div>
                     <div id="flowIns2" class="flow-card">
-                        <i class="fa-solid fa-barcode text-cyan-400 mb-1" style="font-size: 0.8rem;"></i>
-                        <span style="font-size: 8px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
-                        <span style="font-size: 7px; color: #38bdf8;">Miolo (01-12)</span>
+                        <i class="fa-solid fa-barcode text-cyan-400 mb-1" style="font-size: 0.75rem;"></i>
+                        <span style="font-size: 7px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
+                        <span style="font-size: 6px; color: #38bdf8;">Miolo (01-12)</span>
                     </div>
                     <div id="flowB52" class="flow-card">
-                        <i class="fa-solid fa-layer-group text-amber-400 mb-1" style="font-size: 0.8rem;"></i>
-                        <span style="font-size: 8px; font-weight: bold; color: #fde68a;">BANDEJA B52</span>
-                        <span style="font-size: 7px; color: #fcd34d;">Alinhamento</span>
+                        <i class="fa-solid fa-scissors text-amber-400 mb-1" style="font-size: 0.75rem;"></i>
+                        <span style="font-size: 7px; font-weight: bold; color: #fde68a;">FACA DE CORTE</span>
+                        <span style="font-size: 6px; color: #fcd34d;">A4 em 3 partes</span>
                     </div>
                     <div id="flowStapler" class="flow-card">
-                        <i class="fa-solid fa-stapler text-emerald-400 mb-1" style="font-size: 0.8rem;"></i>
-                        <span style="font-size: 8px; font-weight: bold; color: #a7f3d0;">GRAMPEADOR</span>
-                        <span style="font-size: 7px; color: #6ee7b7;">Acabamento</span>
+                        <i class="fa-solid fa-stapler text-emerald-400 mb-1" style="font-size: 0.75rem;"></i>
+                        <span style="font-size: 7px; font-weight: bold; color: #a7f3d0;">GRAMPEADOR</span>
+                        <span style="font-size: 6px; color: #6ee7b7;">Acabamento</span>
                     </div>
                 </div>
 
-                <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem;">
+                <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 4px 8px; display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem;">
                     <div><span style="color: #64748b;">Status Ativo:</span> <span id="currentActionDesc" style="color: #38bdf8; font-weight: bold;">Repouso</span></div>
                 </div>
             </div>
 
             <!-- Log de Execução -->
-            <div style="margin-top: 12px; display: flex; flex-direction: column;">
-                <div style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px; display: flex; justify-content: space-between;">
+            <div style="margin-top: 10px; display: flex; flex-direction: column;">
+                <div style="font-size: 0.65rem; font-weight: 600; color: #94a3b8; margin-bottom: 3px; display: flex; justify-content: space-between;">
                     <span><i class="fa-solid fa-terminal mr-1"></i> Log de Execução CLP</span>
-                    <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer;">Limpar</button>
+                    <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.6rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Supervisório HMI pronto com gestão de receitas.</div>
+                    <div>[00:00:00] Calculadora de insumos ajustada para Faca de Corte A4 (3 carnês/ciclo).</div>
                 </div>
             </div>
         </section>
@@ -401,7 +451,7 @@
             { id: 7, name: "Sobe elevador 2", cat: "Elevador" },
             { id: 8, name: "Desce elevador 2", cat: "Elevador" },
             { id: 9, name: "Parar elevador 2", cat: "Elevador" },
-            { id: 10, name: "Desce a bandeja b52", cat: "Bandeja" },
+            { id: 10, name: "Desce a bandeja b52 / Faca", cat: "Bandeja/Corte" },
             { id: 11, name: "Acionar esteira", cat: "Transporte" },
             { id: 12, name: "Gerar atraso (ms)", cat: "Temporizador", hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
             { id: 13, name: "Gera atraso tbem em (10xms)", cat: "Temporizador", hasParam: true, paramVal: 60, paramLabel: "Atraso (10x ms)" },
@@ -422,6 +472,22 @@
         let currentStepIndex = 0;
         let simulationTimer = null;
         let totalProduced = 0;
+
+        // --- CÁLCULO INTELIGENTE DE INSUMOS (Faca de Corte A4: 1 ciclo = 3 carnês com 12 miolo + 2 capa A4) ---
+        function calcularInsumos() {
+            let qtdCarnes = parseInt(document.getElementById('inputCarneQtd').value) || 0;
+            if (qtdCarnes < 0) qtdCarnes = 0;
+
+            // Cada ciclo faz 3 carnês
+            let ciclosNecessarios = Math.ceil(qtdCarnes / 3);
+            // 1 ciclo consome 12 folhas A4 de miolo e 2 folhas A4 de capa
+            let totalMioloA4 = ciclosNecessarios * 12;
+            let totalCapaA4 = ciclosNecessarios * 2;
+
+            document.getElementById('calcCiclos').innerText = ciclosNecessarios;
+            document.getElementById('calcMiolo').innerText = totalMioloA4;
+            document.getElementById('calcCapa').innerText = totalCapaA4;
+        }
 
         function renderCatalog() {
             const container = document.getElementById('commandCatalog');
@@ -525,7 +591,7 @@
                 { id: 6, name: "Alimenta inseridor 2", hasParam: false },
                 { id: 12, name: "Gerar atraso (ms)", hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
                 { id: 19, name: "Fecha loop", hasParam: true, paramVal: 12, paramLabel: "Qtd Repetições" },
-                { id: 10, name: "Desce a bandeja b52", hasParam: false },
+                { id: 10, name: "Desce a bandeja b52 / Faca", hasParam: false },
                 { id: 11, name: "Acionar esteira", hasParam: false },
                 { id: 22, name: "Grava programa", hasParam: false }
             ];
@@ -534,24 +600,18 @@
             addLog("Receita Padrão carregada.");
         }
 
-        // --- GESTÃO DE RECEITAS (Salvar, LocalStorage, Importar, Exportar) ---
+        // --- GESTÃO DE RECEITAS ---
         function saveCurrentRecipe() {
             const nameInput = document.getElementById('recipeNameInput').value.trim();
-            if (!nameInput) {
-                alert("Digite um nome para a receita antes de salvar.");
-                return;
-            }
-            if (activeSequence.length === 0) {
-                alert("A sequência está vazia. Adicione comandos antes de salvar.");
-                return;
-            }
+            if (!nameInput) { alert("Digite um nome para a receita."); return; }
+            if (activeSequence.length === 0) { alert("A sequência está vazia."); return; }
 
             let savedRecipes = JSON.parse(localStorage.getItem('laurent_recipes') || '{}');
             savedRecipes[nameInput] = activeSequence;
             localStorage.setItem('laurent_recipes', JSON.stringify(savedRecipes));
 
             updateSavedRecipesSelect();
-            addLog(`Receita "${nameInput}" salva com sucesso no navegador!`);
+            addLog(`Receita "${nameInput}" salva no navegador!`);
             alert(`Receita "${nameInput}" salva com sucesso!`);
         }
 
@@ -582,10 +642,7 @@
         }
 
         function exportRecipeJSON() {
-            if (activeSequence.length === 0) {
-                alert("Nenhuma sequência ativa para exportar.");
-                return;
-            }
+            if (activeSequence.length === 0) { alert("Nenhuma sequência ativa."); return; }
             const recipeName = document.getElementById('recipeNameInput').value.trim() || "receita_laurent";
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ name: recipeName, sequence: activeSequence }, null, 2));
             const downloadAnchor = document.createElement('a');
@@ -606,19 +663,14 @@
                     const imported = JSON.parse(e.target.result);
                     if (imported.sequence && Array.isArray(imported.sequence)) {
                         activeSequence = imported.sequence;
-                        if (imported.name) {
-                            document.getElementById('recipeNameInput').value = imported.name;
-                        }
+                        if (imported.name) document.getElementById('recipeNameInput').value = imported.name;
                         renderSequence();
                         addLog(`Receita "${imported.name || 'Importada'}" importada com sucesso!`);
-                        alert(`Receita importada com sucesso! (${activeSequence.length} passos)`);
                     } else {
-                        alert("Arquivo JSON inválido para a Talonadora Laurent.");
+                        alert("Arquivo JSON inválido.");
                     }
-                } catch (err) {
-                    alert("Erro ao ler o arquivo JSON.");
-                }
-                event.target.value = ""; // Limpa input
+                } catch (err) { alert("Erro ao ler JSON."); }
+                event.target.value = "";
             };
             reader.readAsText(file);
         }
@@ -633,9 +685,7 @@
             consoleBox.scrollTop = consoleBox.scrollHeight;
         }
 
-        function clearLogs() {
-            document.getElementById('consoleLogs').innerHTML = '';
-        }
+        function clearLogs() { document.getElementById('consoleLogs').innerHTML = ''; }
 
         function highlightModule(moduleId, flowCardId, desc) {
             ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
@@ -643,25 +693,19 @@
 
             if (moduleId) document.getElementById(moduleId).classList.add('station-active');
             if (flowCardId) document.getElementById(flowCardId).classList.add('highlight');
-
             document.getElementById('currentActionDesc').innerText = desc;
         }
 
         function runSimulation() {
-            if (activeSequence.length === 0) {
-                alert("Carregue ou monte uma receita antes de iniciar.");
-                return;
-            }
+            if (activeSequence.length === 0) { alert("Carregue uma receita."); return; }
             isRunning = true;
             currentStepIndex = 0;
-            
             document.getElementById('btnRun').style.display = 'none';
             document.getElementById('btnPause').style.display = 'inline-flex';
             document.getElementById('cycleStatus').innerText = "Rodando...";
             document.getElementById('cycleStatus').style.color = "#f59e0b";
             document.getElementById('mglStatusText').innerText = "Em Execução";
-            
-            addLog("Iniciando ciclo automático na Talonadora...");
+            addLog("Iniciando ciclo automático...");
             runNextStep();
         }
 
@@ -669,12 +713,12 @@
             if (!isRunning) return;
             if (currentStepIndex >= activeSequence.length) {
                 stopSimulation();
-                totalProduced += 3; // Incrementa de 3 em 3 carnês por ciclo
+                totalProduced += 3; // +3 carnês por ciclo completo
                 document.getElementById('prodCount').innerText = totalProduced;
-                addLog("Ciclo finalizado! +3 carnês produzidos e contabilizados.");
+                addLog("Ciclo finalizado! Faca cortou A4 e gerou +3 carnês.");
                 document.getElementById('cycleStatus').innerText = "Concluído";
                 document.getElementById('cycleStatus').style.color = "#34d399";
-                document.getElementById('currentActionDesc').innerText = "3 carnês prontos na saída";
+                document.getElementById('currentActionDesc').innerText = "3 carnês cortados e grampeados";
                 return;
             }
 
@@ -683,13 +727,13 @@
             addLog(`Passo [${currentStepIndex + 1}]: ${step.name}`);
 
             if ([1, 2].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns1', 'Inseridor 1: Alimentando capa e contra...');
+                highlightModule('boxMgl', 'flowIns1', 'Inseridor 1: Capa e Contra A4...');
             } else if ([6, 17].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns2', 'Inseridor 2 + Leitor: Alimentando miolo (01-12)...');
+                highlightModule('boxMgl', 'flowIns2', 'Inseridor 2 + Leitor: Miolo (01-12) A4...');
             } else if (step.id === 10) {
-                highlightModule('boxMgl', 'flowB52', 'Bandeja B52: Alinhando conjunto...');
+                highlightModule('boxMgl', 'flowB52', 'Faca de Corte: Dividindo folha A4 em 3...');
             } else if (step.id === 11) {
-                highlightModule('boxMgl', 'flowStapler', 'Grampeador: Aplicando grampo no lombo...');
+                highlightModule('boxMgl', 'flowStapler', 'Grampeador: Aplicando grampo...');
             } else {
                 document.getElementById('currentActionDesc').innerText = `Executando: ${step.name}`;
             }
@@ -711,13 +755,11 @@
             isRunning = false;
             clearTimeout(simulationTimer);
             currentStepIndex = 0;
-            
             document.getElementById('btnRun').style.display = 'inline-flex';
             document.getElementById('btnPause').style.display = 'none';
             document.getElementById('cycleStatus').innerText = "Aguardando";
             document.getElementById('cycleStatus').style.color = "#34d399";
             document.getElementById('mglStatusText').innerText = "Standby";
-
             renderSequence();
             ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
             ['flowIns1', 'flowIns2', 'flowB52', 'flowStapler'].forEach(id => document.getElementById(id).classList.remove('highlight'));
@@ -728,6 +770,7 @@
             renderCatalog();
             updateSavedRecipesSelect();
             loadDefaultRecipe();
+            calcularInsumos();
         };
     </script>
 </body>
