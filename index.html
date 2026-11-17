@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel HMI - Talonadora Laurent 4425d & MGL Binder</title>
+    <title>Painel HMI Supervisor - Talonadora Laurent 4425d & MGL Binder</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -103,7 +103,7 @@
         .scrollable {
             flex: 1;
             overflow-y: auto;
-            max-height: calc(100vh - 300px);
+            max-height: calc(100vh - 340px);
             padding-right: 4px;
         }
         .scrollable::-webkit-scrollbar { width: 6px; }
@@ -154,7 +154,7 @@
             border-radius: 10px;
             padding: 14px;
             position: relative;
-            height: 380px;
+            height: 320px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -166,7 +166,7 @@
             background: #1e293b;
             border: 2px solid #334155;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -183,14 +183,14 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             flex: 1;
-            margin: 10px 0;
+            margin: 8px 0;
             align-items: center;
         }
         .flow-card {
             background: #090d16;
             border: 1px solid #1e293b;
             border-radius: 8px;
-            padding: 10px 6px;
+            padding: 8px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -205,35 +205,36 @@
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        .token-anim {
-            background: #eff6ff;
-            color: #1e3a8a;
-            border: 2px solid #2563eb;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            position: absolute;
-            bottom: 60px;
-            left: 20px;
-            transition: all 0.6s ease-in-out;
-            box-shadow: 0 8px 12px rgba(0,0,0,0.4);
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .metric-card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
             display: flex;
-            align-items: center;
-            gap: 6px;
-            opacity: 0;
-            z-index: 30;
+            flex-direction: column;
+        }
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #38bdf8;
         }
 
         .console-box {
             background-color: #020617;
             border: 1px solid #1e293b;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
             font-family: monospace;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: #34d399;
-            height: 100px;
+            height: 90px;
             overflow-y: auto;
         }
     </style>
@@ -247,21 +248,21 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Painel HMI com 23 Comandos CLP Completos</p>
+                <p>Supervisório HMI com Métricas e 23 Comandos CLP</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
             <span class="badge"><span class="pulse"></span> CLP Conectado</span>
-            <button onclick="loadDefaultRecipe()" class="btn-blue"><i class="fa-solid fa-magic"></i> Receita Automática (Padrão)</button>
+            <button onclick="loadDefaultRecipe()" class="btn-blue"><i class="fa-solid fa-magic"></i> Receita Padrão</button>
         </div>
     </header>
 
     <main>
-        <!-- COLUNA 1: CATÁLOGO COMPLETO DE 23 COMANDOS CLP -->
+        <!-- COLUNA 1: 23 COMANDOS CLP -->
         <section class="card">
             <div class="card-title">
                 <span><i class="fa-solid fa-cubes text-blue-400 mr-2"></i> 1. Comandos CLP (1 a 23)</span>
-                <span style="font-size: 0.7rem; background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #cbd5e1;">Todos Disponíveis</span>
+                <span style="font-size: 0.65rem; background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #cbd5e1;">Catálogo</span>
             </div>
             <div class="scrollable" id="commandCatalog"></div>
         </section>
@@ -269,7 +270,7 @@
         <!-- COLUNA 2: SEQUÊNCIA E PARAMETRIZAÇÃO -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 2. Sequência de Produção</span>
+                <span><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 2. Sequência Ativa</span>
                 <div style="display: flex; gap: 6px;">
                     <button onclick="clearSequence()" class="btn-red" style="padding: 3px 6px; font-size: 0.65rem;"><i class="fa-solid fa-trash"></i></button>
                     <span id="stepCount" style="font-family: monospace; font-size: 0.7rem; background: #1e293b; padding: 3px 6px; border-radius: 4px; color: #cbd5e1;">0 passos</span>
@@ -284,81 +285,82 @@
                     <button onclick="stopSimulation()" class="btn-slate"><i class="fa-solid fa-stop"></i></button>
                 </div>
                 <div style="text-align: right;">
-                    <span style="font-size: 0.65rem; color: #94a3b8; display: block;">Status do Ciclo</span>
+                    <span style="font-size: 0.65rem; color: #94a3b8; display: block;">Status</span>
                     <span id="cycleStatus" style="font-size: 0.7rem; font-weight: bold; color: #34d399; text-transform: uppercase;">Aguardando</span>
                 </div>
             </div>
         </section>
 
-        <!-- COLUNA 3: SINÓPTICO VISUAL LIMPO E DIRETO -->
+        <!-- COLUNA 3: SINÓPTICO E MÉTRICAS DE PRODUÇÃO -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-display text-cyan-400 mr-2"></i> 3. Sinóptico e Acompanhamento</span>
-                <span style="font-size: 0.65rem; background: #082f49; color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Modo Visual Limpo</span>
+                <span><i class="fa-solid fa-chart-line text-cyan-400 mr-2"></i> 3 & 4. Supervisório & Métricas</span>
+                <span id="alarmIndicator" style="font-size: 0.65rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">Sistema OK</span>
+            </div>
+
+            <!-- Métricas de Produção (OEE / Turno) -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Carnês Produzidos</span>
+                    <span id="prodCount" class="metric-value">0</span>
+                </div>
+                <div class="metric-card">
+                    <span style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">Velocidade Média</span>
+                    <span class="metric-value">14.2 <span style="font-size: 0.7rem; color: #64748b;">cpm</span></span>
+                </div>
             </div>
 
             <div class="viewport-box">
-                <!-- Cabeçalho MGL -->
                 <div id="boxMgl" class="station-box">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="background: #2563eb; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">MGL-Binder</span>
-                        <span style="font-size: 0.75rem; font-family: monospace; font-weight: bold; color: #f1f5f9;">Painel Digital</span>
+                        <span style="background: #2563eb; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">MGL</span>
+                        <span style="font-size: 0.7rem; font-family: monospace; font-weight: bold; color: #f1f5f9;">Painel Digital 950 CL</span>
                     </div>
-                    <span id="mglStatusText" style="font-size: 10px; font-family: monospace; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Standby</span>
+                    <span id="mglStatusText" style="font-size: 9px; font-family: monospace; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Standby</span>
                 </div>
 
-                <!-- Estágios da Linha (Fluxo Limpo em 4 Cards) -->
                 <div class="flow-container">
                     <div id="flowIns1" class="flow-card">
-                        <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1"></i>
-                        <span style="font-size: 9px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
-                        <span style="font-size: 8px; color: #94a3b8;">Capa / Contra</span>
+                        <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1" style="font-size: 0.8rem;"></i>
+                        <span style="font-size: 8px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
+                        <span style="font-size: 7px; color: #94a3b8;">Capa / Contra</span>
                     </div>
                     <div id="flowIns2" class="flow-card">
-                        <i class="fa-solid fa-barcode text-cyan-400 mb-1"></i>
-                        <span style="font-size: 9px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
-                        <span style="font-size: 8px; color: #38bdf8;">Miolo (01-12)</span>
+                        <i class="fa-solid fa-barcode text-cyan-400 mb-1" style="font-size: 0.8rem;"></i>
+                        <span style="font-size: 8px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
+                        <span style="font-size: 7px; color: #38bdf8;">Miolo (01-12)</span>
                     </div>
                     <div id="flowB52" class="flow-card">
-                        <i class="fa-solid fa-layer-group text-amber-400 mb-1"></i>
-                        <span style="font-size: 9px; font-weight: bold; color: #fde68a;">BANDEJA B52</span>
-                        <span style="font-size: 8px; color: #fcd34d;">Alinhamento</span>
+                        <i class="fa-solid fa-layer-group text-amber-400 mb-1" style="font-size: 0.8rem;"></i>
+                        <span style="font-size: 8px; font-weight: bold; color: #fde68a;">BANDEJA B52</span>
+                        <span style="font-size: 7px; color: #fcd34d;">Alinhamento</span>
                     </div>
                     <div id="flowStapler" class="flow-card">
-                        <i class="fa-solid fa-stapler text-emerald-400 mb-1"></i>
-                        <span style="font-size: 9px; font-weight: bold; color: #a7f3d0;">GRAMPEADOR</span>
-                        <span style="font-size: 8px; color: #6ee7b7;">Acabamento</span>
+                        <i class="fa-solid fa-stapler text-emerald-400 mb-1" style="font-size: 0.8rem;"></i>
+                        <span style="font-size: 8px; font-weight: bold; color: #a7f3d0;">GRAMPEADOR</span>
+                        <span style="font-size: 7px; color: #6ee7b7;">Acabamento</span>
                     </div>
                 </div>
 
-                <!-- Token animado do papel/carnê -->
-                <div id="activeToken" class="token-anim">
-                    <i class="fa-solid fa-file-lines text-blue-600"></i>
-                    <span id="tokenLabel">Carnê em Montagem</span>
-                </div>
-
-                <!-- Telemetria Rápida -->
-                <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem;">
-                    <div><span style="color: #64748b;">Ação Atual:</span> <span id="currentActionDesc" style="color: #38bdf8; font-weight: bold;">Sistema em Repouso</span></div>
+                <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem;">
+                    <div><span style="color: #64748b;">Status Ativo:</span> <span id="currentActionDesc" style="color: #38bdf8; font-weight: bold;">Repouso</span></div>
                 </div>
             </div>
 
             <!-- Log de Execução -->
-            <div style="margin-top: 14px; display: flex; flex-direction: column;">
-                <div style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between;">
-                    <span><i class="fa-solid fa-terminal mr-1"></i> Log de Execução</span>
+            <div style="margin-top: 12px; display: flex; flex-direction: column;">
+                <div style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span><i class="fa-solid fa-terminal mr-1"></i> Log de Execução CLP</span>
                     <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Painel HMI inicializado com os 23 comandos CLP.</div>
-                    <div>[00:00:00] Pronto para carregar receita e simular montagem.</div>
+                    <div>[00:00:00] Supervisório HMI & 23 Comandos prontos.</div>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        // Lista completa com exatamente os 23 comandos do CLP da Talonadora Laurent
         const commandsData = [
             { id: 1, name: "Alimenta inseridor 1 capa e contra", cat: "Alimentação" },
             { id: 2, name: "Envia inseridor 1 capa e contra", cat: "Transporte" },
@@ -389,6 +391,7 @@
         let isRunning = false;
         let currentStepIndex = 0;
         let simulationTimer = null;
+        let totalProduced = 0;
 
         function renderCatalog() {
             const container = document.getElementById('commandCatalog');
@@ -398,15 +401,15 @@
                 const item = document.createElement('div');
                 item.className = 'catalog-item';
                 item.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="cmd-badge">${cmd.id < 10 ? '0' + cmd.id : cmd.id}</span>
                         <div>
-                            <p style="font-size: 0.75rem; font-weight: 600; color: #e2e8f0;">${cmd.name}</p>
-                            <span style="font-size: 8px; color: #64748b; text-transform: uppercase;">${cmd.cat}</span>
+                            <p style="font-size: 0.7rem; font-weight: 600; color: #e2e8f0;">${cmd.name}</p>
+                            <span style="font-size: 7px; color: #64748b; text-transform: uppercase;">${cmd.cat}</span>
                         </div>
                     </div>
-                    <div style="width: 22px; height: 22px; background: #1e293b; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
-                        <i class="fa-solid fa-plus" style="font-size: 9px;"></i>
+                    <div style="width: 20px; height: 20px; background: #1e293b; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                        <i class="fa-solid fa-plus" style="font-size: 8px;"></i>
                     </div>
                 `;
                 item.onclick = () => addCommandToSequence(cmd);
@@ -430,13 +433,13 @@
             const stepCountEl = document.getElementById('stepCount');
             if (!list || !stepCountEl) return;
             
-            stepCountEl.innerText = `${activeSequence.length} ${activeSequence.length === 1 ? 'passo' : 'passos'}`;
+            stepCountEl.innerText = `${activeSequence.length} passos`;
             
             if (activeSequence.length === 0) {
                 list.innerHTML = `
                     <div style="text-align: center; padding: 40px 0; color: #64748b; border: 1px dashed #1e293b; border-radius: 8px;">
-                        <i class="fa-solid fa-file-circle-plus" style="font-size: 1.8rem; margin-bottom: 6px; opacity: 0.5;"></i>
-                        <p style="font-size: 0.75rem;">Nenhum comando na sequência.<br>Clique em 'Receita Automática' acima.</p>
+                        <i class="fa-solid fa-file-circle-plus" style="font-size: 1.5rem; margin-bottom: 6px; opacity: 0.5;"></i>
+                        <p style="font-size: 0.7rem;">Nenhum comando na sequência.<br>Clique em 'Receita Padrão' acima.</p>
                     </div>
                 `;
                 return;
@@ -450,20 +453,20 @@
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="width: 20px; height: 20px; background: #1e293b; color: #cbd5e1; font-family: monospace; font-size: 9px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
-                            <span style="font-family: monospace; font-size: 0.7rem; font-weight: bold; color: #60a5fa;">#${step.id < 10 ? '0' + step.id : step.id}</span>
-                            <span style="font-size: 0.7rem; font-weight: 600; color: #e2e8f0;">${step.name}</span>
+                            <span style="width: 18px; height: 18px; background: #1e293b; color: #cbd5e1; font-family: monospace; font-size: 8px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
+                            <span style="font-family: monospace; font-size: 0.65rem; font-weight: bold; color: #60a5fa;">#${step.id < 10 ? '0' + step.id : step.id}</span>
+                            <span style="font-size: 0.68rem; font-weight: 600; color: #e2e8f0;">${step.name}</span>
                         </div>
                         <div style="display: flex; gap: 4px;">
-                            <button onclick="moveStep(${index}, -1)" style="padding: 2px 5px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-up" style="font-size: 9px;"></i></button>
-                            <button onclick="moveStep(${index}, 1)" style="padding: 2px 5px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-down" style="font-size: 9px;"></i></button>
-                            <button onclick="removeStep(${index})" style="padding: 2px 5px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer; margin-left: 2px;"><i class="fa-solid fa-trash" style="font-size: 9px;"></i></button>
+                            <button onclick="moveStep(${index}, -1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-up" style="font-size: 8px;"></i></button>
+                            <button onclick="moveStep(${index}, 1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-down" style="font-size: 8px;"></i></button>
+                            <button onclick="removeStep(${index})" style="padding: 2px 4px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-trash" style="font-size: 8px;"></i></button>
                         </div>
                     </div>
                     ${step.hasParam ? `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: #020617; padding: 4px 8px; border-radius: 6px; border: 1px solid #1e293b; margin-top: 2px;">
-                            <span style="font-size: 9px; color: #94a3b8;">${step.paramLabel}:</span>
-                            <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" style="width: 60px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #fff; padding: 2px 4px; font-family: monospace; font-size: 0.7rem; text-align: right;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: #020617; padding: 3px 6px; border-radius: 4px; border: 1px solid #1e293b; margin-top: 2px;">
+                            <span style="font-size: 8px; color: #94a3b8;">${step.paramLabel}:</span>
+                            <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" style="width: 50px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #fff; padding: 1px 4px; font-family: monospace; font-size: 0.68rem; text-align: right;">
                         </div>
                     ` : ''}
                 `;
@@ -497,7 +500,7 @@
                 { id: 22, name: "Grava programa", hasParam: false }
             ];
             renderSequence();
-            addLog("Receita Automática Padrão carregada com sucesso.");
+            addLog("Receita Padrão carregada com sucesso.");
         }
 
         function addLog(msg) {
@@ -514,7 +517,7 @@
             document.getElementById('consoleLogs').innerHTML = '';
         }
 
-        function highlightModule(moduleId, flowCardId, textLabel, desc) {
+        function highlightModule(moduleId, flowCardId, desc) {
             ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
             ['flowIns1', 'flowIns2', 'flowB52', 'flowStapler'].forEach(id => document.getElementById(id).classList.remove('highlight'));
 
@@ -522,19 +525,11 @@
             if (flowCardId) document.getElementById(flowCardId).classList.add('highlight');
 
             document.getElementById('currentActionDesc').innerText = desc;
-            
-            const token = document.getElementById('activeToken');
-            document.getElementById('tokenLabel').innerText = textLabel;
-            token.style.opacity = '1';
-        }
-
-        function hideToken() {
-            document.getElementById('activeToken').style.opacity = '0';
         }
 
         function runSimulation() {
             if (activeSequence.length === 0) {
-                alert("Carregue a Receita Automática antes de iniciar.");
+                alert("Carregue a Receita Padrão antes de iniciar.");
                 return;
             }
             isRunning = true;
@@ -546,7 +541,7 @@
             document.getElementById('cycleStatus').style.color = "#f59e0b";
             document.getElementById('mglStatusText').innerText = "Em Execução";
             
-            addLog("Iniciando ciclo automático guiado...");
+            addLog("Iniciando ciclo automático na Talonadora...");
             runNextStep();
         }
 
@@ -554,32 +549,33 @@
             if (!isRunning) return;
             if (currentStepIndex >= activeSequence.length) {
                 stopSimulation();
-                addLog("Ciclo finalizado com sucesso! Carnê grampeado.");
+                totalProduced++;
+                document.getElementById('prodCount').innerText = totalProduced;
+                addLog("Ciclo finalizado! Carnê grampeado com sucesso.");
                 document.getElementById('cycleStatus').innerText = "Concluído";
                 document.getElementById('cycleStatus').style.color = "#34d399";
                 document.getElementById('currentActionDesc').innerText = "Carnê pronto na saída";
-                hideToken();
                 return;
             }
 
             renderSequence();
             const step = activeSequence[currentStepIndex];
-            addLog(`Executando Passo ${currentStepIndex + 1}: ${step.name}`);
+            addLog(`Passo [${currentStepIndex + 1}]: ${step.name}`);
 
             if ([1, 2].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns1', 'Capa / Contra Alimentada', 'Inseridor 1: Alimentando capa e contra na esteira...');
+                highlightModule('boxMgl', 'flowIns1', 'Inseridor 1: Alimentando capa e contra...');
             } else if ([6, 17].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns2', 'Miolo 01-12 Lendo', 'Inseridor 2 + Leitor: Empilhando folhas do miolo...');
+                highlightModule('boxMgl', 'flowIns2', 'Inseridor 2 + Leitor: Alimentando miolo (01-12)...');
             } else if (step.id === 10) {
-                highlightModule('boxMgl', 'flowB52', 'Alinhando na B52', 'Bandeja B52: Descendo para esquadro do carnê...');
+                highlightModule('boxMgl', 'flowB52', 'Bandeja B52: Alinhando conjunto...');
             } else if (step.id === 11) {
-                highlightModule('boxMgl', 'flowStapler', 'Grampeando (Clack!)', 'Grampeador: Aplicando grampos no lombo do carnê...');
+                highlightModule('boxMgl', 'flowStapler', 'Grampeador: Aplicando grampo no lombo...');
             } else {
-                document.getElementById('currentActionDesc').innerText = `Processando: ${step.name}`;
+                document.getElementById('currentActionDesc').innerText = `Executando: ${step.name}`;
             }
 
             currentStepIndex++;
-            simulationTimer = setTimeout(runNextStep, 900);
+            simulationTimer = setTimeout(runNextStep, 800);
         }
 
         function pauseSimulation() {
@@ -588,7 +584,7 @@
             document.getElementById('btnRun').style.display = 'inline-flex';
             document.getElementById('btnPause').style.display = 'none';
             document.getElementById('cycleStatus').innerText = "Pausado";
-            addLog("Simulação pausada pelo operador.");
+            addLog("Simulação pausada.");
         }
 
         function stopSimulation() {
@@ -605,8 +601,7 @@
             renderSequence();
             ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
             ['flowIns1', 'flowIns2', 'flowB52', 'flowStapler'].forEach(id => document.getElementById(id).classList.remove('highlight'));
-            document.getElementById('currentActionDesc').innerText = "Sistema em Repouso";
-            hideToken();
+            document.getElementById('currentActionDesc').innerText = "Repouso";
         }
 
         window.onload = () => {
