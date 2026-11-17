@@ -173,17 +173,23 @@
             gap: 8px;
         }
 
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
         .calc-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
             text-align: center;
         }
         .calc-metric {
             background: #0f172a;
             border: 1px solid #334155;
             border-radius: 6px;
-            padding: 6px 4px;
+            padding: 6px 2px;
         }
 
         .viewport-box {
@@ -191,7 +197,7 @@
             border-radius: 10px;
             padding: 14px;
             position: relative;
-            height: 250px;
+            height: 240px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -270,7 +276,7 @@
             font-family: monospace;
             font-size: 0.68rem;
             color: #34d399;
-            height: 70px;
+            height: 65px;
             overflow-y: auto;
         }
     </style>
@@ -284,7 +290,7 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Supervisório HMI com Calculadora de Corte A4 por Faca (3 Carnês/Ciclo)</p>
+                <p>Supervisório HMI com Calculadora Customizável (Miolo, Capa e Informativo)</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -343,37 +349,55 @@
             </div>
         </section>
 
-        <!-- COLUNA 3: CALCULADORA DE INSUMOS COM FACA DE CORTE A4, MÉTRICAS E SINÓPTICO -->
+        <!-- COLUNA 3: CALCULADORA CUSTOMIZÁVEL, MÉTRICAS E SINÓPTICO -->
         <section class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-calculator text-cyan-400 mr-2"></i> 3. Calculadora de Insumos</span>
+                <span><i class="fa-solid fa-calculator text-cyan-400 mr-2"></i> 3. Calculadora Customizável</span>
                 <span style="font-size: 0.65rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">Faca Corte A4</span>
             </div>
 
-            <!-- CALCULADORA DE INSUMOS (CORRETA: 1 Ciclo = 12 Miolo + 2 Capa = 14 Folhas A4 para 3 Carnês) -->
+            <!-- CALCULADORA DE INSUMOS FLEXÍVEL -->
             <div class="calc-box">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 0.7rem; font-weight: bold; color: #cbd5e1;"><i class="fa-solid fa-scissors mr-1 text-amber-400"></i> Orçamento de Impressão</span>
-                    <span style="font-size: 0.65rem; color: #64748b;">(1 Ciclo = 14 Folhas = 3 Carnês)</span>
+                    <span style="font-size: 0.7rem; font-weight: bold; color: #cbd5e1;"><i class="fa-solid fa-sliders mr-1 text-amber-400"></i> Parâmetros de Impressão</span>
+                    <span style="font-size: 0.62rem; color: #64748b;">(3 Carnês/Ciclo)</span>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.65rem; color: #94a3b8; display: block; margin-bottom: 2px;">Carnês Desejados:</label>
-                        <input type="number" id="inputCarneQtd" value="300" min="3" step="3" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 8px; font-family: monospace; font-size: 0.8rem;">
+                
+                <div class="calc-inputs">
+                    <div>
+                        <label style="font-size: 0.62rem; color: #94a3b8; display: block; margin-bottom: 2px;">Carnês Desejados:</label>
+                        <input type="number" id="inputCarneQtd" value="300" min="3" step="3" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 5px 6px; font-family: monospace; font-size: 0.75rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.62rem; color: #94a3b8; display: block; margin-bottom: 2px;">Folhas Miolo / Carnê:</label>
+                        <input type="number" id="inputMioloQtd" value="12" min="1" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 5px 6px; font-family: monospace; font-size: 0.75rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.62rem; color: #94a3b8; display: block; margin-bottom: 2px;">Folhas Capa / Carnê:</label>
+                        <input type="number" id="inputCapaQtd" value="2" min="0" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 5px 6px; font-family: monospace; font-size: 0.75rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.62rem; color: #94a3b8; display: block; margin-bottom: 2px;">Folhas Informativo / Carnê:</label>
+                        <input type="number" id="inputInfoQtd" value="0" min="0" oninput="calcularInsumos()" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 5px 6px; font-family: monospace; font-size: 0.75rem;">
                     </div>
                 </div>
-                <div class="calc-grid">
+
+                <div class="calc-grid" style="margin-top: 4px;">
                     <div class="calc-metric">
-                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Ciclos (Máquina)</span>
-                        <span id="calcCiclos" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #38bdf8;">100</span>
+                        <span style="font-size: 0.58rem; color: #94a3b8; display: block;">Ciclos</span>
+                        <span id="calcCiclos" style="font-size: 0.8rem; font-weight: bold; font-family: monospace; color: #38bdf8;">100</span>
                     </div>
                     <div class="calc-metric">
-                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Folhas Miolo A4</span>
-                        <span id="calcMiolo" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #34d399;">1200</span>
+                        <span style="font-size: 0.58rem; color: #94a3b8; display: block;">Miolo A4</span>
+                        <span id="calcMiolo" style="font-size: 0.8rem; font-weight: bold; font-family: monospace; color: #34d399;">1200</span>
                     </div>
-                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 4px; text-align: center;">
-                        <span style="font-size: 0.6rem; color: #94a3b8; display: block;">Folhas Capa A4</span>
-                        <span id="calcCapa" style="font-size: 0.85rem; font-weight: bold; font-family: monospace; color: #fde68a;">200</span>
+                    <div class="calc-metric">
+                        <span style="font-size: 0.58rem; color: #94a3b8; display: block;">Capa A4</span>
+                        <span id="calcCapa" style="font-size: 0.8rem; font-weight: bold; font-family: monospace; color: #fde68a;">200</span>
+                    </div>
+                    <div class="calc-metric">
+                        <span style="font-size: 0.58rem; color: #94a3b8; display: block;">Info A4</span>
+                        <span id="calcInfo" style="font-size: 0.8rem; font-weight: bold; font-family: monospace; color: #c084fc;">0</span>
                     </div>
                 </div>
             </div>
@@ -403,12 +427,12 @@
                     <div id="flowIns1" class="flow-card">
                         <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1" style="font-size: 0.75rem;"></i>
                         <span style="font-size: 7px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
-                        <span style="font-size: 6px; color: #94a3b8;">Capa / Contra</span>
+                        <span style="font-size: 6px; color: #94a3b8;">Capa / Info</span>
                     </div>
                     <div id="flowIns2" class="flow-card">
                         <i class="fa-solid fa-barcode text-cyan-400 mb-1" style="font-size: 0.75rem;"></i>
                         <span style="font-size: 7px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
-                        <span style="font-size: 6px; color: #38bdf8;">Miolo (01-12)</span>
+                        <span style="font-size: 6px; color: #38bdf8;">Miolo (Folhas)</span>
                     </div>
                     <div id="flowB52" class="flow-card">
                         <i class="fa-solid fa-scissors text-amber-400 mb-1" style="font-size: 0.75rem;"></i>
@@ -434,7 +458,7 @@
                     <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.6rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Calculadora de insumos ajustada para Faca de Corte A4 (3 carnês/ciclo).</div>
+                    <div>[00:00:00] Calculadora flexível (Miolo, Capa e Informativo) carregada.</div>
                 </div>
             </div>
         </section>
@@ -473,20 +497,29 @@
         let simulationTimer = null;
         let totalProduced = 0;
 
-        // --- CÁLCULO INTELIGENTE DE INSUMOS (Faca de Corte A4: 1 ciclo = 3 carnês com 12 miolo + 2 capa A4) ---
+        // --- CÁLCULO INTELIGENTE CUSTOMIZÁVEL DE INSUMOS ---
         function calcularInsumos() {
             let qtdCarnes = parseInt(document.getElementById('inputCarneQtd').value) || 0;
-            if (qtdCarnes < 0) qtdCarnes = 0;
+            let flMiolo = parseInt(document.getElementById('inputMioloQtd').value) || 0;
+            let flCapa = parseInt(document.getElementById('inputCapaQtd').value) || 0;
+            let flInfo = parseInt(document.getElementById('inputInfoQtd').value) || 0;
 
-            // Cada ciclo faz 3 carnês
+            if (qtdCarnes < 0) qtdCarnes = 0;
+            if (flMiolo < 0) flMiolo = 0;
+            if (flCapa < 0) flCapa = 0;
+            if (flInfo < 0) flInfo = 0;
+
+            // Cada ciclo produz sempre 3 carnês devido ao corte da faca A4
             let ciclosNecessarios = Math.ceil(qtdCarnes / 3);
-            // 1 ciclo consome 12 folhas A4 de miolo e 2 folhas A4 de capa
-            let totalMioloA4 = ciclosNecessarios * 12;
-            let totalCapaA4 = ciclosNecessarios * 2;
+
+            let totalMioloA4 = ciclosNecessarios * flMiolo;
+            let totalCapaA4 = ciclosNecessarios * flCapa;
+            let totalInfoA4 = ciclosNecessarios * flInfo;
 
             document.getElementById('calcCiclos').innerText = ciclosNecessarios;
             document.getElementById('calcMiolo').innerText = totalMioloA4;
             document.getElementById('calcCapa').innerText = totalCapaA4;
+            document.getElementById('calcInfo').innerText = totalInfoA4;
         }
 
         function renderCatalog() {
@@ -727,9 +760,9 @@
             addLog(`Passo [${currentStepIndex + 1}]: ${step.name}`);
 
             if ([1, 2].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns1', 'Inseridor 1: Capa e Contra A4...');
+                highlightModule('boxMgl', 'flowIns1', 'Inseridor 1: Capa/Info A4...');
             } else if ([6, 17].includes(step.id)) {
-                highlightModule('boxMgl', 'flowIns2', 'Inseridor 2 + Leitor: Miolo (01-12) A4...');
+                highlightModule('boxMgl', 'flowIns2', 'Inseridor 2 + Leitor: Miolo A4...');
             } else if (step.id === 10) {
                 highlightModule('boxMgl', 'flowB52', 'Faca de Corte: Dividindo folha A4 em 3...');
             } else if (step.id === 11) {
