@@ -3,225 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel HMI - Programador Talonadora Laurent 4425d</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Painel HMI - Talonadora Laurent 4425d & MGL Binder</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        industrial: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                            950: '#020617'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
-            50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #020617;
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .active-module {
-            animation: pulseGlow 1.5s infinite;
+        header {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1e293b;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
+        header h1 { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        header p { font-size: 0.75rem; color: #94a3b8; }
+        
+        .badge {
+            background-color: #022c22;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pulse { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        button {
+            padding: 8px 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-blue { background-color: #2563eb; color: #fff; }
+        .btn-blue:hover { background-color: #1d4ed8; }
+        .btn-slate { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+        .btn-slate:hover { background-color: #334155; }
+        .btn-emerald { background-color: #059669; color: #fff; }
+        .btn-emerald:hover { background-color: #047857; }
+        .btn-amber { background-color: #d97706; color: #fff; }
+        .btn-amber:hover { background-color: #b45309; }
+        .btn-red { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+        .btn-red:hover { background-color: #991b1b; color: #fff; }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr 1.2fr;
+            gap: 20px;
+            max-width: 1700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        @media (max-width: 1200px) {
+            main { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .scrollable {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+            padding-right: 4px;
+        }
+        .scrollable::-webkit-scrollbar { width: 6px; }
+        .scrollable::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        .catalog-item {
+            background-color: rgba(2, 6, 23, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        .catalog-item:hover { background-color: #1e293b; border-color: #334155; }
+        .cmd-badge {
+            width: 26px; height: 26px;
+            background-color: #1e293b;
+            color: #60a5fa;
+            font-family: monospace;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .sequence-step {
+            background-color: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sequence-step.active {
+            border-color: #10b981;
+            background-color: rgba(6, 78, 59, 0.25);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .viewport-box {
+            background-color: #020617;
+            border-radius: 10px;
+            padding: 14px;
+            position: relative;
+            height: 380px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #1e293b;
+            overflow: hidden;
+        }
+        
+        .station-box {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+        .station-active {
             border-color: #10b981 !important;
+            background-color: #064e3b !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
         }
-        .paper-token {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            flex: 1;
+            margin: 10px 0;
+            align-items: center;
+        }
+        .flow-card {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            transition: all 0.3s;
+        }
+        .flow-card.highlight {
+            border-color: #38bdf8;
+            background: #032841;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .token-anim {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border: 2px solid #2563eb;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            transition: all 0.6s ease-in-out;
+            box-shadow: 0 8px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            z-index: 30;
+        }
+
+        .console-box {
+            background-color: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #34d399;
+            height: 100px;
+            overflow-y: auto;
         }
     </style>
 </head>
-<body class="bg-industrial-950 text-slate-100 font-sans min-h-screen flex flex-col">
+<body>
 
-    <!-- Top Bar / Header -->
-    <header class="bg-industrial-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-lg">
-        <div class="flex items-center space-x-3">
-            <div class="bg-blue-600 p-2.5 rounded-lg text-white shadow-md">
-                <i class="fa-solid fa-microchip text-xl"></i>
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 10px; border-radius: 10px; color: #fff;">
+                <i class="fa-solid fa-industry" style="font-size: 1.2rem;"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold tracking-wide text-white">Talonadora Laurent 4425d</h1>
-                <p class="text-xs text-slate-400">Sistema HMI e Programador de Sequência Automática de Carnês</p>
+                <h1>Talonadora Laurent 4425d & MGL Binder</h1>
+                <p>Painel HMI com 23 Comandos CLP Completos</p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <span class="px-3 py-1 bg-emerald-950 border border-emerald-600/50 text-emerald-400 text-xs font-semibold rounded-full flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> CLP Conectado (Modbus/TCP)
-            </span>
-            <button onclick="loadDefaultRecipe()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-2">
-                <i class="fa-solid fa-book-open"></i> Carregar Receita Padrão (Carnê 12 Fichas)
-            </button>
-            <button onclick="exportProgram()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-download"></i> Exportar JSON
-            </button>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="badge"><span class="pulse"></span> CLP Conectado</span>
+            <button onclick="loadDefaultRecipe()" class="btn-blue"><i class="fa-solid fa-magic"></i> Receita Automática (Padrão)</button>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
-    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1700px] mx-auto w-full">
-        
-        <!-- Column 1: Command Palette (Catalog) -->
-        <section class="lg:col-span-3 bg-industrial-900 border border-slate-800 rounded-xl p-5 flex flex-col shadow-xl">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
-                <span><i class="fa-solid fa-bars-staggered text-blue-500 mr-2"></i> Comandos do CLP</span>
-                <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">23 Funções</span>
-            </h2>
-            <div class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[calc(100vh-220px)] custom-scrollbar" id="commandCatalog">
-                <!-- Injected via JS -->
+    <main>
+        <!-- COLUNA 1: CATÁLOGO COMPLETO DE 23 COMANDOS CLP -->
+        <section class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-cubes text-blue-400 mr-2"></i> 1. Comandos CLP (1 a 23)</span>
+                <span style="font-size: 0.7rem; background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #cbd5e1;">Todos Disponíveis</span>
             </div>
+            <div class="scrollable" id="commandCatalog"></div>
         </section>
 
-        <!-- Column 2: Sequence Editor (Recipe Builder) -->
-        <section class="lg:col-span-5 bg-industrial-900 border border-slate-800 rounded-xl p-5 flex flex-col shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center">
-                    <i class="fa-solid fa-list-check text-emerald-500 mr-2"></i> Editor de Sequência (Receita Ativa)
-                </h2>
-                <div class="flex items-center gap-2">
-                    <button onclick="clearSequence()" class="text-xs px-2.5 py-1.5 bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800 rounded transition">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Limpar
-                    </button>
-                    <span id="stepCount" class="text-xs bg-slate-800 px-2.5 py-1.5 rounded text-slate-300 font-mono">0 passos</span>
+        <!-- COLUNA 2: SEQUÊNCIA E PARAMETRIZAÇÃO -->
+        <section class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 2. Sequência de Produção</span>
+                <div style="display: flex; gap: 6px;">
+                    <button onclick="clearSequence()" class="btn-red" style="padding: 3px 6px; font-size: 0.65rem;"><i class="fa-solid fa-trash"></i></button>
+                    <span id="stepCount" style="font-family: monospace; font-size: 0.7rem; background: #1e293b; padding: 3px 6px; border-radius: 4px; color: #cbd5e1;">0 passos</span>
                 </div>
             </div>
-
-            <!-- Steps Container -->
-            <div class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[calc(100vh-320px)]" id="sequenceList">
-                <!-- Steps injected via JS -->
-            </div>
-
-            <!-- Execution Controls -->
-            <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <button onclick="runSimulation()" id="btnRun" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-lg transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-play"></i> Iniciar Ciclo
-                    </button>
-                    <button onclick="pauseSimulation()" id="btnPause" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg shadow-lg transition hidden items-center gap-2 text-sm">
-                        <i class="fa-solid fa-pause"></i> Pausa
-                    </button>
-                    <button onclick="stopSimulation()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition text-sm">
-                        <i class="fa-solid fa-stop"></i>
-                    </button>
+            <div class="scrollable" id="sequenceList"></div>
+            
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 6px;">
+                    <button onclick="runSimulation()" id="btnRun" class="btn-emerald"><i class="fa-solid fa-play"></i> Iniciar</button>
+                    <button onclick="pauseSimulation()" id="btnPause" class="btn-amber" style="display: none;"><i class="fa-solid fa-pause"></i> Pausa</button>
+                    <button onclick="stopSimulation()" class="btn-slate"><i class="fa-solid fa-stop"></i></button>
                 </div>
-                <div class="text-right">
-                    <span class="text-xs text-slate-400 block">Status do Ciclo</span>
-                    <span id="cycleStatus" class="text-xs font-bold text-emerald-400 uppercase tracking-wide">Aguardando Início</span>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.65rem; color: #94a3b8; display: block;">Status do Ciclo</span>
+                    <span id="cycleStatus" style="font-size: 0.7rem; font-weight: bold; color: #34d399; text-transform: uppercase;">Aguardando</span>
                 </div>
             </div>
         </section>
 
-        <!-- Column 3: Visual Machine Simulator & Telemetry -->
-        <section class="lg:col-span-4 bg-industrial-900 border border-slate-800 rounded-xl p-5 flex flex-col shadow-xl">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
-                <span><i class="fa-solid fa-eye text-cyan-500 mr-2"></i> Sinóptico 3D da Máquina</span>
-                <span class="text-xs bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800">Visualizador em Tempo Real</span>
-            </h2>
-
-            <!-- Graphic Schematic Box -->
-            <div class="bg-industrial-950 border border-slate-800 rounded-xl p-4 relative h-[340px] flex flex-col justify-between overflow-hidden shadow-inner">
-                
-                <!-- Machine Background Blueprint Grid -->
-                <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
-
-                <!-- Top Row: Inserters & Stapler Head -->
-                <div class="relative z-10 flex justify-between items-center px-2">
-                    <!-- Inseridor 2 -->
-                    <div id="module-ins2" class="bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 w-28 text-center transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">INSERIDOR 2</div>
-                        <div class="text-xs font-mono text-cyan-400 mt-0.5">Miolo (1-12)</div>
-                        <div class="w-2 h-2 rounded-full bg-slate-600 mx-auto mt-1 status-dot"></div>
-                    </div>
-
-                    <!-- Inseridor 1 -->
-                    <div id="module-ins1" class="bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 w-28 text-center transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">INSERIDOR 1</div>
-                        <div class="text-xs font-mono text-cyan-400 mt-0.5">Capa / Folder</div>
-                        <div class="w-2 h-2 rounded-full bg-slate-600 mx-auto mt-1 status-dot"></div>
-                    </div>
-
-                    <!-- Stapler & Wire Spool -->
-                    <div id="module-stapler" class="bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 w-28 text-center transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">GRAMPEADOR</div>
-                        <div class="text-xs font-mono text-amber-400 mt-0.5">Carretel Azul</div>
-                        <div class="w-2 h-2 rounded-full bg-slate-600 mx-auto mt-1 status-dot"></div>
-                    </div>
-                </div>
-
-                <!-- Middle Conveyor Belt Path & Animated Paper Tokens -->
-                <div class="relative z-10 my-auto bg-slate-900/90 border border-emerald-900/50 rounded-lg h-20 p-2 flex items-center overflow-hidden shadow-md">
-                    <!-- Conveyor track lines -->
-                    <div class="absolute inset-x-0 top-1/2 border-t border-dashed border-emerald-700/50"></div>
-                    
-                    <!-- Dynamic Paper Tokens Track -->
-                    <div class="absolute left-4 flex items-center space-x-2 transition-all duration-500" id="paperTrack">
-                        <span class="text-xs font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">Mesa / Esteira Verde</span>
-                    </div>
-                </div>
-
-                <!-- Bottom Row: B52 Tray & Optical Readers -->
-                <div class="relative z-10 flex justify-between items-center px-2">
-                    <!-- Optical Reader 1 & 2 -->
-                    <div id="module-reader" class="bg-slate-900 border-2 border-slate-700 rounded-lg p-2 w-32 text-center transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">LEITOR ÓTICO</div>
-                        <div class="text-xs font-mono text-emerald-400 mt-0.5">Leitura Boletos</div>
-                    </div>
-
-                    <!-- Bandeja B52 -->
-                    <div id="module-b52" class="bg-slate-900 border-2 border-slate-700 rounded-lg p-2 w-36 text-center transition-all">
-                        <div class="text-[10px] font-bold text-slate-400">BANDEJA B52</div>
-                        <div class="text-xs font-mono text-purple-400 mt-0.5" id="b52State">Pos: Em Espera</div>
-                    </div>
-                </div>
-
+        <!-- COLUNA 3: SINÓPTICO VISUAL LIMPO E DIRETO -->
+        <section class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-display text-cyan-400 mr-2"></i> 3. Sinóptico e Acompanhamento</span>
+                <span style="font-size: 0.65rem; background: #082f49; color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Modo Visual Limpo</span>
             </div>
 
-            <!-- Live Telemetry Log -->
-            <div class="mt-4 flex-1 flex flex-col">
-                <span class="text-xs font-semibold text-slate-400 mb-2 flex items-center justify-between">
-                    <span><i class="fa-solid fa-terminal text-slate-500 mr-1.5"></i> Log de Execução CLP</span>
-                    <button onclick="clearLogs()" class="text-[10px] text-slate-500 hover:text-slate-300">Limpar</button>
-                </span>
-                <div id="consoleLogs" class="bg-industrial-950 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-emerald-400 h-36 overflow-y-auto space-y-1 shadow-inner">
-                    <div>[00:00:00] Sistema CLP Talonadora Laurent 4425d inicializado.</div>
-                    <div>[00:00:00] Aguardando comando de início de ciclo...</div>
+            <div class="viewport-box">
+                <!-- Cabeçalho MGL -->
+                <div id="boxMgl" class="station-box">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: #2563eb; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">MGL-Binder</span>
+                        <span style="font-size: 0.75rem; font-family: monospace; font-weight: bold; color: #f1f5f9;">Painel Digital</span>
+                    </div>
+                    <span id="mglStatusText" style="font-size: 10px; font-family: monospace; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Standby</span>
+                </div>
+
+                <!-- Estágios da Linha (Fluxo Limpo em 4 Cards) -->
+                <div class="flow-container">
+                    <div id="flowIns1" class="flow-card">
+                        <i class="fa-solid fa-arrow-down-long text-blue-400 mb-1"></i>
+                        <span style="font-size: 9px; font-weight: bold; color: #93c5fd;">INSERIDOR 1</span>
+                        <span style="font-size: 8px; color: #94a3b8;">Capa / Contra</span>
+                    </div>
+                    <div id="flowIns2" class="flow-card">
+                        <i class="fa-solid fa-barcode text-cyan-400 mb-1"></i>
+                        <span style="font-size: 9px; font-weight: bold; color: #e2e8f0;">INSERIDOR 2</span>
+                        <span style="font-size: 8px; color: #38bdf8;">Miolo (01-12)</span>
+                    </div>
+                    <div id="flowB52" class="flow-card">
+                        <i class="fa-solid fa-layer-group text-amber-400 mb-1"></i>
+                        <span style="font-size: 9px; font-weight: bold; color: #fde68a;">BANDEJA B52</span>
+                        <span style="font-size: 8px; color: #fcd34d;">Alinhamento</span>
+                    </div>
+                    <div id="flowStapler" class="flow-card">
+                        <i class="fa-solid fa-stapler text-emerald-400 mb-1"></i>
+                        <span style="font-size: 9px; font-weight: bold; color: #a7f3d0;">GRAMPEADOR</span>
+                        <span style="font-size: 8px; color: #6ee7b7;">Acabamento</span>
+                    </div>
+                </div>
+
+                <!-- Token animado do papel/carnê -->
+                <div id="activeToken" class="token-anim">
+                    <i class="fa-solid fa-file-lines text-blue-600"></i>
+                    <span id="tokenLabel">Carnê em Montagem</span>
+                </div>
+
+                <!-- Telemetria Rápida -->
+                <div style="background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem;">
+                    <div><span style="color: #64748b;">Ação Atual:</span> <span id="currentActionDesc" style="color: #38bdf8; font-weight: bold;">Sistema em Repouso</span></div>
+                </div>
+            </div>
+
+            <!-- Log de Execução -->
+            <div style="margin-top: 14px; display: flex; flex-direction: column;">
+                <div style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                    <span><i class="fa-solid fa-terminal mr-1"></i> Log de Execução</span>
+                    <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.65rem; cursor: pointer;">Limpar</button>
+                </div>
+                <div class="console-box" id="consoleLogs">
+                    <div>[00:00:00] Painel HMI inicializado com os 23 comandos CLP.</div>
+                    <div>[00:00:00] Pronto para carregar receita e simular montagem.</div>
                 </div>
             </div>
         </section>
-
     </main>
 
     <script>
-        // Command Catalog Data (23 commands)
+        // Lista completa com exatamente os 23 comandos do CLP da Talonadora Laurent
         const commandsData = [
-            { id: 1, name: "Alimenta inseridor 1 capa e contra", cat: "Alimentação", icon: "fa-arrow-down" },
-            { id: 2, name: "Envia inseridor 1 capa e contra", cat: "Transporte", icon: "fa-arrow-right" },
-            { id: 3, name: "Sobe elevador 1", cat: "Elevador", icon: "fa-arrow-up" },
-            { id: 4, name: "Desce elevador 1", cat: "Elevador", icon: "fa-arrow-down" },
-            { id: 5, name: "Parar elevador 1", cat: "Elevador", icon: "fa-stop" },
-            { id: 6, name: "Alimenta inseridor 2", cat: "Alimentação", icon: "fa-arrow-down" },
-            { id: 7, name: "Sobe elevador 2", cat: "Elevador", icon: "fa-arrow-up" },
-            { id: 8, name: "Desce elevador 2", cat: "Elevador", icon: "fa-arrow-down" },
-            { id: 9, name: "Parar elevador 2", cat: "Elevador", icon: "fa-stop" },
-            { id: 10, name: "Desce a bandeja b52", cat: "Bandeja", icon: "fa-arrow-down-long" },
-            { id: 11, name: "Acionar esteira", cat: "Transporte", icon: "fa-gauge-high" },
-            { id: 12, name: "Gerar atraso (ms)", cat: "Temporizador", icon: "fa-clock", hasParam: true, paramName: "valor_ms", paramLabel: "Tempo (ms)", defaultVal: 500 },
-            { id: 13, name: "Gera atraso tbem em (10xms)", cat: "Temporizador", icon: "fa-clock", hasParam: true, paramName: "valor_10ms", paramLabel: "Tempo (10x ms)", defaultVal: 60 },
-            { id: 14, name: "Gera atraso em (10x s)", cat: "Temporizador", icon: "fa-clock", hasParam: true, paramName: "valor_10s", paramLabel: "Tempo (10x s)", defaultVal: 10 },
-            { id: 15, name: "Gera atraso tbem em (s)", cat: "Temporizador", icon: "fa-clock", hasParam: true, paramName: "valor_s", paramLabel: "Tempo (s)", defaultVal: 2 },
-            { id: 16, name: "Sequência de leitor 1", cat: "Leitor Ótico", icon: "fa-barcode" },
-            { id: 17, name: "Sequência de leitor 2", cat: "Leitor Ótico", icon: "fa-barcode" },
-            { id: 18, name: "Abre loop", cat: "Lógica", icon: "fa-rotate" },
-            { id: 19, name: "Fecha loop", cat: "Lógica", icon: "fa-rotate-left", hasParam: true, paramName: "loop_count", paramLabel: "Qtd Repetições", defaultVal: 12 },
-            { id: 20, name: "Fecha loop (2)", cat: "Lógica", icon: "fa-rotate-left" },
-            { id: 21, name: "Alimenta condicional", cat: "Lógica", icon: "fa-code-branch" },
-            { id: 22, name: "Grava programa", cat: "Sistema", icon: "fa-floppy-disk" },
-            { id: 23, name: "Deleta programa", cat: "Sistema", icon: "fa-trash" }
+            { id: 1, name: "Alimenta inseridor 1 capa e contra", cat: "Alimentação" },
+            { id: 2, name: "Envia inseridor 1 capa e contra", cat: "Transporte" },
+            { id: 3, name: "Sobe elevador 1", cat: "Elevador" },
+            { id: 4, name: "Desce elevador 1", cat: "Elevador" },
+            { id: 5, name: "Parar elevador 1", cat: "Elevador" },
+            { id: 6, name: "Alimenta inseridor 2", cat: "Alimentação" },
+            { id: 7, name: "Sobe elevador 2", cat: "Elevador" },
+            { id: 8, name: "Desce elevador 2", cat: "Elevador" },
+            { id: 9, name: "Parar elevador 2", cat: "Elevador" },
+            { id: 10, name: "Desce a bandeja b52", cat: "Bandeja" },
+            { id: 11, name: "Acionar esteira", cat: "Transporte" },
+            { id: 12, name: "Gerar atraso (ms)", cat: "Temporizador", hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
+            { id: 13, name: "Gera atraso tbem em (10xms)", cat: "Temporizador", hasParam: true, paramVal: 60, paramLabel: "Atraso (10x ms)" },
+            { id: 14, name: "Gera atraso em (10x s)", cat: "Temporizador", hasParam: true, paramVal: 10, paramLabel: "Atraso (10x s)" },
+            { id: 15, name: "Gera atraso tbem em (s)", cat: "Temporizador", hasParam: true, paramVal: 2, paramLabel: "Atraso (s)" },
+            { id: 16, name: "Sequência de leitor 1", cat: "Leitor" },
+            { id: 17, name: "Sequência de leitor 2", cat: "Leitor" },
+            { id: 18, name: "Abre loop", cat: "Lógica" },
+            { id: 19, name: "Fecha loop", cat: "Lógica", hasParam: true, paramVal: 12, paramLabel: "Qtd Repetições" },
+            { id: 20, name: "Fecha loop (2)", cat: "Lógica" },
+            { id: 21, name: "Alimenta condicional", cat: "Lógica" },
+            { id: 22, name: "Grava programa", cat: "Sistema" },
+            { id: 23, name: "Deleta programa", cat: "Sistema" }
         ];
 
         let activeSequence = [];
@@ -229,54 +390,53 @@
         let currentStepIndex = 0;
         let simulationTimer = null;
 
-        // Render Command Catalog
         function renderCatalog() {
             const container = document.getElementById('commandCatalog');
+            if (!container) return;
             container.innerHTML = '';
             commandsData.forEach(cmd => {
                 const item = document.createElement('div');
-                item.className = 'bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition group shadow-sm';
+                item.className = 'catalog-item';
                 item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="w-7 h-7 rounded bg-slate-800 text-blue-400 font-mono text-xs flex items-center justify-center font-bold group-hover:bg-blue-600 group-hover:text-white transition">${cmd.id < 10 ? '0' + cmd.id : cmd.id}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="cmd-badge">${cmd.id < 10 ? '0' + cmd.id : cmd.id}</span>
                         <div>
-                            <p class="text-xs font-semibold text-slate-200">${cmd.name}</p>
-                            <span class="text-[10px] text-slate-400 uppercase tracking-wider">${cmd.cat}</span>
+                            <p style="font-size: 0.75rem; font-weight: 600; color: #e2e8f0;">${cmd.name}</p>
+                            <span style="font-size: 8px; color: #64748b; text-transform: uppercase;">${cmd.cat}</span>
                         </div>
                     </div>
-                    <button class="w-7 h-7 rounded bg-slate-800 text-slate-400 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                    </button>
+                    <div style="width: 22px; height: 22px; background: #1e293b; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                        <i class="fa-solid fa-plus" style="font-size: 9px;"></i>
+                    </div>
                 `;
                 item.onclick = () => addCommandToSequence(cmd);
                 container.appendChild(item);
             });
         }
 
-        // Add Command to Sequence
         function addCommandToSequence(cmd) {
-            const newStep = {
+            activeSequence.push({
                 id: cmd.id,
                 name: cmd.name,
                 hasParam: cmd.hasParam || false,
-                paramName: cmd.paramName || '',
-                paramVal: cmd.defaultVal || 0,
+                paramVal: cmd.paramVal || 0,
                 paramLabel: cmd.paramLabel || ''
-            };
-            activeSequence.push(newStep);
+            });
             renderSequence();
         }
 
-        // Render Sequence List
         function renderSequence() {
             const list = document.getElementById('sequenceList');
-            document.getElementById('stepCount').innerText = `${activeSequence.length} ${activeSequence.length === 1 ? 'passo' : 'passos'}`;
+            const stepCountEl = document.getElementById('stepCount');
+            if (!list || !stepCountEl) return;
+            
+            stepCountEl.innerText = `${activeSequence.length} ${activeSequence.length === 1 ? 'passo' : 'passos'}`;
             
             if (activeSequence.length === 0) {
                 list.innerHTML = `
-                    <div class="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-lg">
-                        <i class="fa-solid fa-file-circle-plus text-3xl mb-2 opacity-50"></i>
-                        <p class="text-xs">Nenhum comando na sequência.<br>Clique nos comandos à esquerda ou carregue a receita padrão.</p>
+                    <div style="text-align: center; padding: 40px 0; color: #64748b; border: 1px dashed #1e293b; border-radius: 8px;">
+                        <i class="fa-solid fa-file-circle-plus" style="font-size: 1.8rem; margin-bottom: 6px; opacity: 0.5;"></i>
+                        <p style="font-size: 0.75rem;">Nenhum comando na sequência.<br>Clique em 'Receita Automática' acima.</p>
                     </div>
                 `;
                 return;
@@ -285,28 +445,25 @@
             list.innerHTML = '';
             activeSequence.forEach((step, index) => {
                 const div = document.createElement('div');
-                div.className = `bg-slate-950/80 border rounded-lg p-3 transition flex flex-col gap-2 ${currentStepIndex === index && isRunning ? 'border-emerald-500 bg-emerald-950/20 active-module' : 'border-slate-800'}`;
+                div.className = `sequence-step ${currentStepIndex === index && isRunning ? 'active' : ''}`;
                 
                 div.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2.5">
-                            <span class="w-6 h-6 rounded bg-slate-800 text-slate-300 font-mono text-xs flex items-center justify-center font-bold">${index + 1}</span>
-                            <span class="text-xs font-mono font-bold text-blue-400">${step.id < 10 ? '0' + step.id : step.id}</span>
-                            <span class="text-xs font-semibold text-slate-200">${step.name}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 20px; height: 20px; background: #1e293b; color: #cbd5e1; font-family: monospace; font-size: 9px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
+                            <span style="font-family: monospace; font-size: 0.7rem; font-weight: bold; color: #60a5fa;">#${step.id < 10 ? '0' + step.id : step.id}</span>
+                            <span style="font-size: 0.7rem; font-weight: 600; color: #e2e8f0;">${step.name}</span>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="moveStep(${index}, -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center text-xs"><i class="fa-solid fa-chevron-up"></i></button>
-                            <button onclick="moveStep(${index}, 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center text-xs"><i class="fa-solid fa-chevron-down"></i></button>
-                            <button onclick="removeStep(${index})" class="w-6 h-6 rounded bg-red-950/50 hover:bg-red-900 text-red-400 flex items-center justify-center text-xs ml-1"><i class="fa-solid fa-trash"></i></button>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick="moveStep(${index}, -1)" style="padding: 2px 5px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-up" style="font-size: 9px;"></i></button>
+                            <button onclick="moveStep(${index}, 1)" style="padding: 2px 5px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-down" style="font-size: 9px;"></i></button>
+                            <button onclick="removeStep(${index})" style="padding: 2px 5px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer; margin-left: 2px;"><i class="fa-solid fa-trash" style="font-size: 9px;"></i></button>
                         </div>
                     </div>
                     ${step.hasParam ? `
-                        <div class="flex items-center justify-between bg-slate-900 px-3 py-1.5 rounded border border-slate-800 mt-1">
-                            <span class="text-[11px] text-slate-400">${step.paramLabel}:</span>
-                            <div class="flex items-center gap-2">
-                                <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" class="w-20 bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-xs text-slate-200 font-mono text-right focus:outline-none focus:border-blue-500">
-                                <span class="text-[10px] text-emerald-400 font-semibold uppercase">atraso gerado</span>
-                            </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: #020617; padding: 4px 8px; border-radius: 6px; border: 1px solid #1e293b; margin-top: 2px;">
+                            <span style="font-size: 9px; color: #94a3b8;">${step.paramLabel}:</span>
+                            <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" style="width: 60px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #fff; padding: 2px 4px; font-family: monospace; font-size: 0.7rem; text-align: right;">
                         </div>
                     ` : ''}
                 `;
@@ -314,10 +471,7 @@
             });
         }
 
-        function updateParam(index, val) {
-            activeSequence[index].paramVal = parseInt(val) || 0;
-        }
-
+        function updateParam(index, val) { activeSequence[index].paramVal = parseInt(val) || 0; }
         function moveStep(index, direction) {
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= activeSequence.length) return;
@@ -326,19 +480,9 @@
             activeSequence[newIndex] = temp;
             renderSequence();
         }
+        function removeStep(index) { activeSequence.splice(index, 1); renderSequence(); }
+        function clearSequence() { activeSequence = []; renderSequence(); addLog("Sequência limpa."); }
 
-        function removeStep(index) {
-            activeSequence.splice(index, 1);
-            renderSequence();
-        }
-
-        function clearSequence() {
-            activeSequence = [];
-            renderSequence();
-            addLog("Sequência limpa pelo operador.");
-        }
-
-        // Load Default Recipe (Exact Talonadora Automatic Cycle)
         function loadDefaultRecipe() {
             activeSequence = [
                 { id: 1, name: "Alimenta inseridor 1 capa e contra", hasParam: false },
@@ -346,25 +490,19 @@
                 { id: 18, name: "Abre loop", hasParam: false },
                 { id: 17, name: "Sequência de leitor 2", hasParam: false },
                 { id: 6, name: "Alimenta inseridor 2", hasParam: false },
-                { id: 12, name: "Gerar atraso (ms)", hasParam: true, paramName: "valor_ms", paramVal: 35, paramLabel: "Tempo (ms)" },
-                { id: 19, name: "Fecha loop", hasParam: true, paramName: "loop_count", paramVal: 12, paramLabel: "Qtd Repetições" },
-                { id: 13, name: "Gera atraso tbem em (10xms)", hasParam: true, paramName: "valor_10ms", paramVal: 60, paramLabel: "Tempo (10x ms)" },
-                { id: 18, name: "Abre loop", hasParam: false },
-                { id: 2, name: "Envia inseridor 1 capa e contra", hasParam: false },
-                { id: 1, name: "Alimenta inseridor 1 capa e contra", hasParam: false },
-                { id: 2, name: "Envia inseridor 1 capa e contra", hasParam: false },
-                { id: 1, name: "Alimenta inseridor 1 capa e contra", hasParam: false },
-                { id: 13, name: "Gera atraso tbem em (10xms)", hasParam: true, paramName: "valor_10ms", paramVal: 99, paramLabel: "Tempo (10x ms)" },
+                { id: 12, name: "Gerar atraso (ms)", hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
+                { id: 19, name: "Fecha loop", hasParam: true, paramVal: 12, paramLabel: "Qtd Repetições" },
                 { id: 10, name: "Desce a bandeja b52", hasParam: false },
                 { id: 11, name: "Acionar esteira", hasParam: false },
                 { id: 22, name: "Grava programa", hasParam: false }
             ];
             renderSequence();
-            addLog("Receita Padrão (Carnê 12 Fichas + Capa + Folder) carregada com sucesso.");
+            addLog("Receita Automática Padrão carregada com sucesso.");
         }
 
         function addLog(msg) {
             const consoleBox = document.getElementById('consoleLogs');
+            if (!consoleBox) return;
             const time = new Date().toTimeString().split(' ')[0];
             const div = document.createElement('div');
             div.innerText = `[${time}] ${msg}`;
@@ -376,21 +514,39 @@
             document.getElementById('consoleLogs').innerHTML = '';
         }
 
-        // Simulation Engine
+        function highlightModule(moduleId, flowCardId, textLabel, desc) {
+            ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
+            ['flowIns1', 'flowIns2', 'flowB52', 'flowStapler'].forEach(id => document.getElementById(id).classList.remove('highlight'));
+
+            if (moduleId) document.getElementById(moduleId).classList.add('station-active');
+            if (flowCardId) document.getElementById(flowCardId).classList.add('highlight');
+
+            document.getElementById('currentActionDesc').innerText = desc;
+            
+            const token = document.getElementById('activeToken');
+            document.getElementById('tokenLabel').innerText = textLabel;
+            token.style.opacity = '1';
+        }
+
+        function hideToken() {
+            document.getElementById('activeToken').style.opacity = '0';
+        }
+
         function runSimulation() {
             if (activeSequence.length === 0) {
-                alert("Adicione comandos ou carregue a receita padrão antes de iniciar.");
+                alert("Carregue a Receita Automática antes de iniciar.");
                 return;
             }
             isRunning = true;
             currentStepIndex = 0;
-            document.getElementById('btnRun').classList.add('hidden');
-            document.getElementById('btnPause').classList.remove('flex');
-            document.getElementById('btnPause').classList.add('flex');
-            document.getElementById('cycleStatus').innerText = "Executando Ciclo...";
-            document.getElementById('cycleStatus').className = "text-xs font-bold text-amber-400 uppercase tracking-wide animate-pulse";
             
-            addLog("Iniciando ciclo automático na Talonadora Laurent 4425d...");
+            document.getElementById('btnRun').style.display = 'none';
+            document.getElementById('btnPause').style.display = 'inline-flex';
+            document.getElementById('cycleStatus').innerText = "Rodando...";
+            document.getElementById('cycleStatus').style.color = "#f59e0b";
+            document.getElementById('mglStatusText').innerText = "Em Execução";
+            
+            addLog("Iniciando ciclo automático guiado...");
             runNextStep();
         }
 
@@ -398,92 +554,61 @@
             if (!isRunning) return;
             if (currentStepIndex >= activeSequence.length) {
                 stopSimulation();
-                addLog("Ciclo concluído com sucesso! Carnê grampeado e depositado na bandeja final.");
-                document.getElementById('cycleStatus').innerText = "Ciclo Concluído";
-                document.getElementById('cycleStatus').className = "text-xs font-bold text-emerald-400 uppercase tracking-wide";
+                addLog("Ciclo finalizado com sucesso! Carnê grampeado.");
+                document.getElementById('cycleStatus').innerText = "Concluído";
+                document.getElementById('cycleStatus').style.color = "#34d399";
+                document.getElementById('currentActionDesc').innerText = "Carnê pronto na saída";
+                hideToken();
                 return;
             }
 
             renderSequence();
             const step = activeSequence[currentStepIndex];
-            addLog(`Executando Passo [${currentStepIndex + 1}]: ${step.name} ${step.hasParam ? `(Atraso: ${step.paramVal})` : ''}`);
-            updateVisualSimulator(step.id);
+            addLog(`Executando Passo ${currentStepIndex + 1}: ${step.name}`);
 
-            let delay = 600;
-            if (step.id === 12) delay = step.paramVal * 10;
-            if (step.id === 13) delay = step.paramVal * 15;
+            if ([1, 2].includes(step.id)) {
+                highlightModule('boxMgl', 'flowIns1', 'Capa / Contra Alimentada', 'Inseridor 1: Alimentando capa e contra na esteira...');
+            } else if ([6, 17].includes(step.id)) {
+                highlightModule('boxMgl', 'flowIns2', 'Miolo 01-12 Lendo', 'Inseridor 2 + Leitor: Empilhando folhas do miolo...');
+            } else if (step.id === 10) {
+                highlightModule('boxMgl', 'flowB52', 'Alinhando na B52', 'Bandeja B52: Descendo para esquadro do carnê...');
+            } else if (step.id === 11) {
+                highlightModule('boxMgl', 'flowStapler', 'Grampeando (Clack!)', 'Grampeador: Aplicando grampos no lombo do carnê...');
+            } else {
+                document.getElementById('currentActionDesc').innerText = `Processando: ${step.name}`;
+            }
 
             currentStepIndex++;
-            simulationTimer = setTimeout(runNextStep, Math.max(400, delay));
+            simulationTimer = setTimeout(runNextStep, 900);
         }
 
         function pauseSimulation() {
             isRunning = false;
             clearTimeout(simulationTimer);
-            document.getElementById('btnRun').classList.remove('hidden');
-            document.getElementById('btnPause').classList.remove('flex');
-            document.getElementById('btnPause').classList.add('hidden');
-            document.getElementById('cycleStatus').innerText = "Ciclo Pausado";
-            document.getElementById('cycleStatus').className = "text-xs font-bold text-amber-400 uppercase tracking-wide";
-            addLog("Ciclo pausado pelo operador.");
+            document.getElementById('btnRun').style.display = 'inline-flex';
+            document.getElementById('btnPause').style.display = 'none';
+            document.getElementById('cycleStatus').innerText = "Pausado";
+            addLog("Simulação pausada pelo operador.");
         }
 
         function stopSimulation() {
             isRunning = false;
             clearTimeout(simulationTimer);
             currentStepIndex = 0;
-            document.getElementById('btnRun').classList.remove('hidden');
-            document.getElementById('btnPause').classList.remove('flex');
-            document.getElementById('btnPause').classList.add('hidden');
-            document.getElementById('cycleStatus').innerText = "Aguardando Início";
-            document.getElementById('cycleStatus').className = "text-xs font-bold text-slate-400 uppercase tracking-wide";
-            renderSequence();
-            resetVisualModules();
-        }
-
-        function updateVisualSimulator(cmdId) {
-            resetVisualModules();
-            const track = document.getElementById('paperTrack');
             
-            if ([1, 2].includes(cmdId)) {
-                document.getElementById('module-ins1').classList.add('active-module');
-                track.innerHTML = `<span class="text-xs font-bold text-blue-300 bg-blue-950 px-3 py-1.5 rounded border border-blue-700 animate-pulse">📄 Contra-Capa / Capa / Folder (Ins 1)</span>`;
-            } else if ([6, 17].includes(cmdId)) {
-                document.getElementById('module-ins2').classList.add('active-module');
-                document.getElementById('module-reader').classList.add('active-module');
-                track.innerHTML = `<span class="text-xs font-bold text-cyan-300 bg-cyan-950 px-3 py-1.5 rounded border border-cyan-700 animate-pulse">📑 Miolo Lendo (Ins 2 & Leitor Ótico)</span>`;
-            } else if (cmdId === 10) {
-                document.getElementById('module-b52').classList.add('active-module');
-                document.getElementById('b52State').innerText = "Pos: Descida / Ativa";
-                track.innerHTML = `<span class="text-xs font-bold text-purple-300 bg-purple-950 px-3 py-1.5 rounded border border-purple-700 animate-pulse">📥 Bandeja B52 Coletando Carnê</span>`;
-            } else if (cmdId === 11) {
-                document.getElementById('module-stapler').classList.add('active-module');
-                track.innerHTML = `<span class="text-xs font-bold text-amber-300 bg-amber-950 px-3 py-1.5 rounded border border-amber-700 animate-pulse">🧵 Esteira & Grampeador Acionados</span>`;
-            } else {
-                track.innerHTML = `<span class="text-xs font-bold text-slate-400 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">⚙️ Processando Comando CLP...</span>`;
-            }
+            document.getElementById('btnRun').style.display = 'inline-flex';
+            document.getElementById('btnPause').style.display = 'none';
+            document.getElementById('cycleStatus').innerText = "Aguardando";
+            document.getElementById('cycleStatus').style.color = "#34d399";
+            document.getElementById('mglStatusText').innerText = "Standby";
+
+            renderSequence();
+            ['boxMgl'].forEach(id => document.getElementById(id).classList.remove('station-active'));
+            ['flowIns1', 'flowIns2', 'flowB52', 'flowStapler'].forEach(id => document.getElementById(id).classList.remove('highlight'));
+            document.getElementById('currentActionDesc').innerText = "Sistema em Repouso";
+            hideToken();
         }
 
-        function resetVisualModules() {
-            ['module-ins1', 'module-ins2', 'module-reader', 'module-b52', 'module-stapler'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove('active-module');
-            });
-            document.getElementById('b52State').innerText = "Pos: Em Espera";
-        }
-
-        function exportProgram() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeSequence, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "receita_talonadora_laurent.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            addLog("Receita exportada em formato JSON.");
-        }
-
-        // Initialize App
         window.onload = () => {
             renderCatalog();
             loadDefaultRecipe();
