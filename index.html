@@ -150,6 +150,12 @@
             background-color: rgba(6, 78, 59, 0.25);
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
         }
+        .sequence-step.param-step {
+            border-left: 3px solid #38bdf8;
+            background-color: rgba(15, 23, 42, 0.8);
+            margin-left: 12px;
+            width: calc(100% - 12px);
+        }
 
         .recipe-toolbar {
             background: #020617;
@@ -290,7 +296,7 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Supervisório HMI com Calculadora Customizável (Miolo, Capa e Informativo)</p>
+                <p>Supervisório HMI com Passos de Atraso Independentes</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -458,7 +464,7 @@
                     <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.6rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Calculadora flexível (Miolo, Capa e Informativo) carregada.</div>
+                    <div>[00:00:00] Passos de atraso independentes configurados.</div>
                 </div>
             </div>
         </section>
@@ -497,7 +503,6 @@
         let simulationTimer = null;
         let totalProduced = 0;
 
-        // --- CÁLCULO INTELIGENTE CUSTOMIZÁVEL DE INSUMOS ---
         function calcularInsumos() {
             let qtdCarnes = parseInt(document.getElementById('inputCarneQtd').value) || 0;
             let flMiolo = parseInt(document.getElementById('inputMioloQtd').value) || 0;
@@ -509,9 +514,7 @@
             if (flCapa < 0) flCapa = 0;
             if (flInfo < 0) flInfo = 0;
 
-            // Cada ciclo produz sempre 3 carnês devido ao corte da faca A4
             let ciclosNecessarios = Math.ceil(qtdCarnes / 3);
-
             let totalMioloA4 = ciclosNecessarios * flMiolo;
             let totalCapaA4 = ciclosNecessarios * flCapa;
             let totalInfoA4 = ciclosNecessarios * flInfo;
@@ -547,13 +550,28 @@
         }
 
         function addCommandToSequence(cmd) {
+            // Se o comando possui parâmetro (como atraso 12,13,14,15 ou repetição 19), 
+            // criamos o comando principal E LOGO ABAIXO criamos um passo dedicado para o valor/parâmetro,
+            // ou armazenamos em um formato onde o valor ganha seu próprio passo numerado abaixo (Ex: Passo 6: Gerar Atraso, Passo 7: Valor do Atraso).
             activeSequence.push({
                 id: cmd.id,
                 name: cmd.name,
+                isParamStep: false,
                 hasParam: cmd.hasParam || false,
                 paramVal: cmd.paramVal || 0,
                 paramLabel: cmd.paramLabel || ''
             });
+
+            if (cmd.hasParam) {
+                activeSequence.push({
+                    id: cmd.id,
+                    name: `Valor de ${cmd.paramLabel} (${cmd.name})`,
+                    isParamStep: true,
+                    paramVal: cmd.paramVal || 0,
+                    paramLabel: cmd.paramLabel || ''
+                });
+            }
+
             renderSequence();
         }
 
@@ -577,28 +595,37 @@
             list.innerHTML = '';
             activeSequence.forEach((step, index) => {
                 const div = document.createElement('div');
-                div.className = `sequence-step ${currentStepIndex === index && isRunning ? 'active' : ''}`;
+                div.className = `sequence-step ${currentStepIndex === index && isRunning ? 'active' : ''} ${step.isParamStep ? 'param-step' : ''}`;
                 
-                div.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="width: 18px; height: 18px; background: #1e293b; color: #cbd5e1; font-family: monospace; font-size: 8px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
-                            <span style="font-family: monospace; font-size: 0.65rem; font-weight: bold; color: #60a5fa;">#${step.id < 10 ? '0' + step.id : step.id}</span>
-                            <span style="font-size: 0.68rem; font-weight: 600; color: #e2e8f0;">${step.name}</span>
+                if (!step.isParamStep) {
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 18px; height: 18px; background: #1e293b; color: #cbd5e1; font-family: monospace; font-size: 8px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
+                                <span style="font-family: monospace; font-size: 0.65rem; font-weight: bold; color: #60a5fa;">#${step.id < 10 ? '0' + step.id : step.id}</span>
+                                <span style="font-size: 0.68rem; font-weight: 600; color: #e2e8f0;">${step.name}</span>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <button onclick="moveStep(${index}, -1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-up" style="font-size: 8px;"></i></button>
+                                <button onclick="moveStep(${index}, 1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-down" style="font-size: 8px;"></i></button>
+                                <button onclick="removeStep(${index})" style="padding: 2px 4px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-trash" style="font-size: 8px;"></i></button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 4px;">
-                            <button onclick="moveStep(${index}, -1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-up" style="font-size: 8px;"></i></button>
-                            <button onclick="moveStep(${index}, 1)" style="padding: 2px 4px; background: #1e293b; color: #94a3b8; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-chevron-down" style="font-size: 8px;"></i></button>
-                            <button onclick="removeStep(${index})" style="padding: 2px 4px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer;"><i class="fa-solid fa-trash" style="font-size: 8px;"></i></button>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 18px; height: 18px; background: #032841; color: #38bdf8; font-family: monospace; font-size: 8px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">${index + 1}</span>
+                                <span style="font-size: 0.65rem; font-weight: 600; color: #38bdf8;"><i class="fa-solid fa-clock mr-1"></i> ${step.name}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" style="width: 65px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #fff; padding: 2px 6px; font-family: monospace; font-size: 0.72rem; text-align: right;">
+                                <button onclick="removeStep(${index})" style="padding: 2px 4px; background: rgba(127,29,29,0.5); color: #fca5a5; border-radius: 4px; border: none; cursor: pointer;" title="Remover passo"><i class="fa-solid fa-trash" style="font-size: 8px;"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    ${step.hasParam ? `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: #020617; padding: 3px 6px; border-radius: 4px; border: 1px solid #1e293b; margin-top: 2px;">
-                            <span style="font-size: 8px; color: #94a3b8;">${step.paramLabel}:</span>
-                            <input type="number" value="${step.paramVal}" onchange="updateParam(${index}, this.value)" style="width: 50px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #fff; padding: 1px 4px; font-family: monospace; font-size: 0.68rem; text-align: right;">
-                        </div>
-                    ` : ''}
-                `;
+                    `;
+                }
                 list.appendChild(div);
             });
         }
@@ -612,21 +639,27 @@
             activeSequence[newIndex] = temp;
             renderSequence();
         }
-        function removeStep(index) { activeSequence.splice(index, 1); renderSequence(); }
+        function removeStep(index) { 
+            // Se remover um comando pai que tem parâmetro, remove também o passo de parâmetro adjacente se houver
+            activeSequence.splice(index, 1); 
+            renderSequence(); 
+        }
         function clearSequence() { activeSequence = []; renderSequence(); addLog("Sequência limpa."); }
 
         function loadDefaultRecipe() {
             activeSequence = [
-                { id: 1, name: "Alimenta inseridor 1 capa e contra", hasParam: false },
-                { id: 2, name: "Envia inseridor 1 capa e contra", hasParam: false },
-                { id: 18, name: "Abre loop", hasParam: false },
-                { id: 17, name: "Sequência de leitor 2", hasParam: false },
-                { id: 6, name: "Alimenta inseridor 2", hasParam: false },
-                { id: 12, name: "Gerar atraso (ms)", hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
-                { id: 19, name: "Fecha loop", hasParam: true, paramVal: 12, paramLabel: "Qtd Repetições" },
-                { id: 10, name: "Desce a bandeja b52 / Faca", hasParam: false },
-                { id: 11, name: "Acionar esteira", hasParam: false },
-                { id: 22, name: "Grava programa", hasParam: false }
+                { id: 1, name: "Alimenta inseridor 1 capa e contra", isParamStep: false },
+                { id: 2, name: "Envia inseridor 1 capa e contra", isParamStep: false },
+                { id: 18, name: "Abre loop", isParamStep: false },
+                { id: 17, name: "Sequência de leitor 2", isParamStep: false },
+                { id: 6, name: "Alimenta inseridor 2", isParamStep: false },
+                { id: 12, name: "Gerar atraso (ms)", isParamStep: false, hasParam: true, paramVal: 35, paramLabel: "Atraso (ms)" },
+                { id: 12, name: "Valor de Atraso (ms) (Gerar atraso (ms))", isParamStep: true, paramVal: 35, paramLabel: "Atraso (ms)" },
+                { id: 19, name: "Fecha loop", isParamStep: false, hasParam: true, paramVal: 12, paramLabel: "Qtd Repetições" },
+                { id: 19, name: "Valor de Qtd Repetições (Fecha loop)", isParamStep: true, paramVal: 12, paramLabel: "Qtd Repetições" },
+                { id: 10, name: "Desce a bandeja b52 / Faca", isParamStep: false },
+                { id: 11, name: "Acionar esteira", isParamStep: false },
+                { id: 22, name: "Grava programa", isParamStep: false }
             ];
             renderSequence();
             document.getElementById('recipeNameInput').value = "Receita Padrão";
@@ -746,7 +779,7 @@
             if (!isRunning) return;
             if (currentStepIndex >= activeSequence.length) {
                 stopSimulation();
-                totalProduced += 3; // +3 carnês por ciclo completo
+                totalProduced += 3;
                 document.getElementById('prodCount').innerText = totalProduced;
                 addLog("Ciclo finalizado! Faca cortou A4 e gerou +3 carnês.");
                 document.getElementById('cycleStatus').innerText = "Concluído";
@@ -808,3 +841,4 @@
     </script>
 </body>
 </html>
+
