@@ -296,7 +296,7 @@
             </div>
             <div>
                 <h1>Talonadora Laurent 4425d & MGL Binder</h1>
-                <p>Supervisório HMI com Passos de Atraso Independentes</p>
+                <p>Supervisório HMI com Exportação TXT & Passos de Atraso Independentes</p>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -329,12 +329,13 @@
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="text" id="recipeNameInput" placeholder="Nome da receita (ex: Carnê 12fls)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 10px; font-size: 0.75rem;">
                     <button onclick="saveCurrentRecipe()" class="btn-purple" title="Salvar Receita"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                    <button onclick="exportRecipeTXT()" class="btn-emerald" title="Baixar Programa em TXT"><i class="fa-solid fa-file-lines"></i> Baixar TXT</button>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between;">
                     <select id="savedRecipesSelect" onchange="loadSelectedRecipe(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 6px 8px; font-size: 0.75rem;">
                         <option value="">-- Receitas Salvas no Navegador --</option>
                     </select>
-                    <button onclick="exportRecipeJSON()" class="btn-slate" title="Exportar JSON"><i class="fa-solid fa-download"></i></button>
+                    <button onclick="exportRecipeJSON()" class="btn-slate" title="Exportar JSON"><i class="fa-solid fa-download"></i> JSON</button>
                     <button onclick="document.getElementById('importFile').click()" class="btn-slate" title="Importar JSON"><i class="fa-solid fa-upload"></i></button>
                     <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRecipeJSON(event)">
                 </div>
@@ -464,7 +465,7 @@
                     <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.6rem; cursor: pointer;">Limpar</button>
                 </div>
                 <div class="console-box" id="consoleLogs">
-                    <div>[00:00:00] Passos de atraso independentes configurados.</div>
+                    <div>[00:00:00] Exportação .TXT e passos de atraso configurados.</div>
                 </div>
             </div>
         </section>
@@ -550,9 +551,6 @@
         }
 
         function addCommandToSequence(cmd) {
-            // Se o comando possui parâmetro (como atraso 12,13,14,15 ou repetição 19), 
-            // criamos o comando principal E LOGO ABAIXO criamos um passo dedicado para o valor/parâmetro,
-            // ou armazenamos em um formato onde o valor ganha seu próprio passo numerado abaixo (Ex: Passo 6: Gerar Atraso, Passo 7: Valor do Atraso).
             activeSequence.push({
                 id: cmd.id,
                 name: cmd.name,
@@ -640,7 +638,6 @@
             renderSequence();
         }
         function removeStep(index) { 
-            // Se remover um comando pai que tem parâmetro, remove também o passo de parâmetro adjacente se houver
             activeSequence.splice(index, 1); 
             renderSequence(); 
         }
@@ -705,6 +702,48 @@
                 renderSequence();
                 addLog(`Receita "${recipeName}" carregada.`);
             }
+        }
+
+        // --- EXPORTAR PROGRAMA EM TXT ---
+        function exportRecipeTXT() {
+            if (activeSequence.length === 0) { alert("Nenhuma sequência ativa para exportar."); return; }
+            const recipeName = document.getElementById('recipeNameInput').value.trim() || "Programa_Laurent";
+            
+            let lines = [];
+            lines.push("=========================================================");
+            lines.push("PROGRAMA CLP - TALONADORA LAURENT 4425d & MGL BINDER");
+            lines.push(`NOME DO PROGRAMA: ${recipeName}`);
+            lines.push(`DATA/HORA: ${new Date().toLocaleString('pt-BR')}`);
+            lines.push(`TOTAL DE PASSOS: ${activeSequence.length}`);
+            lines.push("=========================================================");
+            lines.push("");
+            
+            activeSequence.forEach((step, idx) => {
+                const passoNum = String(idx + 1).padStart(2, '0');
+                const cmdNum = String(step.id).padStart(2, '0');
+                if (step.isParamStep) {
+                    lines.push(`Passo ${passoNum} | [PARAMETRO] -> Valor: ${step.paramVal} (${step.paramLabel})`);
+                } else {
+                    lines.push(`Passo ${passoNum} | Cod #${cmdNum} - ${step.name}`);
+                }
+            });
+            
+            lines.push("");
+            lines.push("=========================================================");
+            
+            const txtContent = lines.join("\r\n");
+            const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const downloadAnchor = document.createElement('a');
+            const safeFileName = recipeName.replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_') || "programa_laurent";
+            downloadAnchor.setAttribute("href", url);
+            downloadAnchor.setAttribute("download", `${safeFileName}.txt`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            URL.revokeObjectURL(url);
+            
+            addLog(`Programa "${recipeName}" baixado em .TXT!`);
         }
 
         function exportRecipeJSON() {
@@ -841,4 +880,3 @@
     </script>
 </body>
 </html>
-
